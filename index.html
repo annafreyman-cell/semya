@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Наши достижения</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky1:#79c0f2; --sky2:#a8d8f0; --grass:#5bad3a; --grass-d:#3f7d28;
+    --dirt:#7a5334; --dirt-d:#5b3d25;
+    --panel:#2b2540; --panel2:#352c52; --panel-line:#1c1830;
+    --text:#ffffff; --muted:#c9c3e0;
+    --done:#3fbf52; --done-d:#2c8c3a;
+    --review:#e0a72e; --review-d:#a97c18;
+    --empty:#4a4266; --empty-d:#332d4a;
+    --gold:#ffd24a; --accent:#7b5cff; --accent-d:#5a3fd6;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;color:var(--text);
+    font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+    background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 30%,#bfe3a8 60%,var(--grass) 100%) fixed;min-height:100vh;}
+  body::before{content:"";position:fixed;top:0;left:0;right:0;height:120px;z-index:0;pointer-events:none;
+    background:radial-gradient(circle at 12% 30px,#fff 0 18px,transparent 19px),radial-gradient(circle at 20% 42px,#fff 0 22px,transparent 23px),radial-gradient(circle at 70% 26px,#fff 0 16px,transparent 17px),radial-gradient(circle at 82% 44px,#fff 0 24px,transparent 25px);opacity:.7;}
+  #app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:14px 12px 96px;}
+  /* pixel font ONLY on the big title + month badge */
+  .pixel{font-family:"Pixelify Sans","Courier New",monospace;font-weight:700;letter-spacing:.5px;}
+  .card h2{font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;letter-spacing:0;}
+
+  header.top{text-align:center;padding:6px 0 10px;}
+  header.top h1{margin:0;font-size:28px;text-shadow:2px 2px 0 var(--grass-d),3px 3px 0 rgba(0,0,0,.25);}
+  header.top .month{display:inline-block;margin-top:8px;background:var(--dirt);color:#fff;padding:4px 14px;border:3px solid var(--dirt-d);box-shadow:3px 3px 0 rgba(0,0,0,.25);font-size:15px;}
+
+  .daynav{display:flex;align-items:center;gap:8px;margin:12px 0;}
+  .daynav button{flex:0 0 auto;background:var(--panel2);border:3px solid var(--panel-line);color:#fff;font-size:18px;width:44px;height:44px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
+  .daynav button:disabled{opacity:.35;cursor:default;}
+  .daynav .cur{flex:1;text-align:center;background:var(--panel);border:3px solid var(--panel-line);padding:8px;box-shadow:3px 3px 0 rgba(0,0,0,.28);}
+  .daynav .cur b{display:block;font-size:15px;color:#fff;}
+  .daynav .cur small{color:var(--muted);font-size:12px;text-transform:capitalize;}
+
+  .card{background:var(--panel);border:4px solid var(--panel-line);box-shadow:5px 5px 0 rgba(0,0,0,.28);padding:14px;margin-bottom:14px;}
+  .card h2{margin:0 0 12px;font-size:16px;color:#fff;}
+  .mombar{display:flex;align-items:center;gap:10px;background:var(--panel2);border:4px solid var(--panel-line);box-shadow:5px 5px 0 rgba(0,0,0,.28);padding:12px 14px;margin-bottom:14px;font-size:14px;color:#fff;}
+  .mombar .txt{flex:1;line-height:1.3;}
+  .lockbtn{flex:0 0 auto;background:var(--accent);border:3px solid var(--accent-d);color:#fff;padding:10px 14px;font-size:15px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,.3);}
+  .lockbtn.on{background:var(--done);border-color:var(--done-d);}
+
+  .prize{background:var(--panel2);border:3px dashed var(--gold);padding:8px 10px;margin-bottom:10px;font-size:12.5px;color:var(--gold);text-align:center;}
+  .rank-row{display:flex;align-items:center;gap:12px;padding:8px;border-bottom:2px solid var(--panel-line);}
+  .rank-row:last-child{border-bottom:none;}
+  .rank-medal{width:28px;text-align:center;font-size:20px;color:#fff;}
+  .rank-face{width:38px;height:38px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#6ec1f0,#8ed07a);border:2px solid var(--panel-line);overflow:hidden;font-size:22px;}
+  .rank-face img{width:100%;height:100%;object-fit:contain;}
+  .rank-name{flex:1;font-size:15px;color:#fff;}
+  .rank-name small{display:block;color:var(--muted);font-size:11px;}
+  .rank-pts{font-weight:700;font-size:17px;color:var(--gold);}
+  .rank-pts .tick{color:var(--done);}
+
+  .member{background:var(--panel);border:4px solid var(--panel-line);box-shadow:5px 5px 0 rgba(0,0,0,.28);padding:12px;margin-bottom:14px;}
+  .m-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .m-face{width:56px;height:56px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#7fc9f2,#8ed07a);border:3px solid var(--panel-line);box-shadow:2px 2px 0 rgba(0,0,0,.3);overflow:hidden;font-size:32px;}
+  .m-face img{width:100%;height:100%;object-fit:contain;}
+  .m-info{flex:1;min-width:0;}
+  .m-name{font-size:16px;font-weight:700;color:#fff;}
+  .m-name span{color:var(--muted);font-weight:400;font-size:12px;}
+  .m-lvl{font-size:11px;color:var(--muted);margin-top:2px;}
+  .m-badge{font-size:10px;color:#ffe6a6;margin-top:2px;}
+  .m-pts{flex:0 0 auto;text-align:center;background:var(--dirt);border:3px solid var(--dirt-d);padding:4px 10px;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
+  .m-pts b{font-size:18px;color:var(--gold);display:block;}
+  .m-pts small{font-size:10px;color:#e7d9c4;text-transform:uppercase;}
+  .bar{height:12px;background:var(--empty-d);border:2px solid var(--panel-line);margin-bottom:12px;overflow:hidden;}
+  .bar>i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--done) 0 8px,var(--done-d) 8px 10px);}
+  .tasks{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .task{display:flex;align-items:center;gap:8px;padding:11px 10px;cursor:pointer;border:3px solid var(--empty-d);background:var(--empty);box-shadow:2px 2px 0 rgba(0,0,0,.28);font-size:13px;line-height:1.15;user-select:none;color:#fff;}
+  .task .tico{font-size:17px;}
+  .task .ttl{flex:1;min-width:0;}
+  .task .tstate{width:20px;text-align:center;font-size:16px;}
+  .task.review{background:var(--review);border-color:var(--review-d);color:#2a2000;}
+  .task.done{background:var(--done);border-color:var(--done-d);color:#0d2a12;}
+  .remind{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:13px;color:var(--muted);}
+  .remind input{background:var(--empty-d);border:3px solid var(--panel-line);color:#fff;padding:7px 8px;font-size:14px;}
+
+  .lrow{display:flex;align-items:center;gap:12px;background:var(--panel2);border:3px solid var(--panel-line);box-shadow:3px 3px 0 rgba(0,0,0,.25);padding:11px 12px;margin-bottom:9px;}
+  .lrow .chk{width:24px;height:24px;flex:0 0 auto;border:3px solid var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .lrow.bought .chk{background:var(--done);border-color:var(--done-d);}
+  .lrow.bought .lt{text-decoration:line-through;color:var(--muted);}
+  .lrow .lt{flex:1;color:#fff;}
+  .datebadge{flex:0 0 auto;width:50px;text-align:center;background:var(--dirt);border:3px solid var(--dirt-d);padding:5px 0;}
+  .datebadge b{display:block;font-size:18px;color:#fff;line-height:1;}
+  .datebadge small{font-size:10px;color:#e7d9c4;text-transform:uppercase;}
+  .lrow .when{font-size:11px;color:var(--muted);margin-top:2px;}
+  .add-row{display:flex;gap:8px;margin-bottom:10px;}
+  .add-row input{flex:1;min-width:0;padding:11px;border:3px solid var(--panel-line);background:var(--empty-d);color:#fff;font-size:15px;outline:none;}
+  .add-row input::placeholder{color:var(--muted);}
+  .addbtn{flex:0 0 auto;width:46px;background:var(--accent);border:3px solid var(--accent-d);color:#fff;font-size:22px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
+
+  nav.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;z-index:20;background:var(--dirt);border-top:4px solid var(--dirt-d);padding:6px 0 calc(6px + env(safe-area-inset-bottom));}
+  nav.tabs button{flex:1;background:none;border:none;color:#e7d9c4;font-family:inherit;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
+  nav.tabs button .ic{font-size:20px;}
+  nav.tabs button.active{color:#fff;}
+  .fail{background:var(--panel);border:4px solid var(--panel-line);padding:24px;text-align:center;color:var(--muted);}
+
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden;display:none;}
+  #confetti.on{display:block;}
+  .conf{position:absolute;width:10px;height:10px;top:-12px;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(540deg);}}
+  #hero{position:fixed;left:50%;bottom:-45%;transform:translateX(-50%);width:200px;z-index:60;pointer-events:none;display:none;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35));}
+  #hero.on{display:block;animation:heroPop 4.4s ease forwards;}
+  #hero img{width:100%;}
+  #hero .cheer{text-align:center;font-family:"Pixelify Sans","Courier New",monospace;font-weight:700;color:#fff;text-shadow:2px 2px 0 #a95a0e;font-size:20px;margin-top:-6px;}
+  @keyframes heroPop{0%{bottom:-45%;}14%{bottom:16%;}84%{bottom:16%;}100%{bottom:-45%;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="top">
+    <h1 class="pixel">🏆 Наши достижения</h1>
+    <div class="month pixel" id="month">—</div>
+  </header>
+  <div id="content"></div>
+</div>
+
+<nav class="tabs">
+  <button id="tab-home" class="active" onclick="switchTab('home')"><span class="ic">🏆</span>Задания</button>
+  <button id="tab-shop" onclick="switchTab('shop')"><span class="ic">🛒</span>Покупки</button>
+  <button id="tab-cal" onclick="switchTab('cal')"><span class="ic">📅</span>Даты</button>
+</nav>
+
+<div id="confetti"></div>
+<div id="hero"><img id="heroImg" alt=""><div class="cheer">Победа! 🎉</div></div>
+
+<script>
+  const tg = window.Telegram ? window.Telegram.WebApp : null;
+  if(tg){ try{ tg.ready(); tg.expand(); }catch(e){} }
+  function haptic(t){ try{ if(tg&&tg.HapticFeedback) tg.HapticFeedback.impactOccurred(t||'light'); }catch(e){} }
+
+  const FALLBACK = {"month":"Июль 2026","heroImage":"hero.png","members":[
+    {"id":"grigoriy","name":"Григорий","age":12,"role":"child","character":"🦊","image":"fox.png","tasks":[
+      {"id":"read","title":"Читать","icon":"📖"},{"id":"teeth","title":"Чистить зубы","icon":"🦷"},{"id":"walk","title":"Гулять","icon":"🌳"},{"id":"screen","title":"Гаджеты ≤ 3 ч","icon":"📱"},{"id":"bed","title":"Заправить кровать","icon":"🛏️"},{"id":"math","title":"Таблица умножения","icon":"✖️"}]},
+    {"id":"kirill","name":"Кирилл","age":10,"role":"child","character":"🐱","image":"cat.png","tasks":[
+      {"id":"read","title":"Читать","icon":"📖"},{"id":"teeth","title":"Чистить зубы","icon":"🦷"},{"id":"walk","title":"Гулять","icon":"🌳"},{"id":"screen","title":"Гаджеты ≤ 3 ч","icon":"📱"},{"id":"bed","title":"Заправить кровать","icon":"🛏️"},{"id":"copy","title":"Переписать текст","icon":"📝"}]},
+    {"id":"mama","name":"Мама","age":null,"role":"parent_admin","character":"🐉","image":"dragon.png","tasks":[
+      {"id":"sport","title":"Зарядка","icon":"🤸"},{"id":"read","title":"Читать","icon":"📖"}]},
+    {"id":"evgeniy","name":"Папа","age":null,"role":"parent_admin","character":"🦁","image":"lion.png","tasks":[
+      {"id":"sport","title":"Спорт","icon":"🤸"},{"id":"read","title":"Читать","icon":"📖"}]}],
+    "shopping":[{"id":1,"text":"Хлеб","bought":false},{"id":2,"text":"Молоко","bought":true},{"id":3,"text":"Тетради","bought":false},{"id":4,"text":"Яблоки","bought":false}],
+    "events":[{"id":1,"text":"День рождения Кирилла","date":"2026-08-02"},{"id":2,"text":"1 сентября — в школу","date":"2026-09-01"},{"id":3,"text":"Поездка к бабушке","date":"2026-07-19"}]};
+
+  const LEVELS=['Новичок','Ученик','Растёт','Умелец','Мастер','Герой','Легенда'];
+  const MONTHS=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
+  const WD=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+  let DATA=null, momMode=false, tab='home';
+  let today=new Date(); today.setHours(0,0,0,0);
+  let curDate=new Date(today);
+
+  function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function plural(n,f){n=Math.abs(n)%100;const n1=n%10;if(n>10&&n<20)return f[2];if(n1>1&&n1<5)return f[1];if(n1===1)return f[0];return f[2];}
+  function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function monthPrefix(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+  function addDays(base,d){ const x=new Date(base); x.setDate(x.getDate()+d); x.setHours(0,0,0,0); return x; }
+  function isParent(m){ return m.role==='parent'||m.role==='parent_admin'; }
+
+  let STATE={days:{},shopping:null,events:null,mom:false,reminders:{}};
+  function loadState(){ try{const s=JSON.parse(localStorage.getItem('dostizh_v3'));if(s)STATE=Object.assign(STATE,s);}catch(e){} if(!STATE.reminders)STATE.reminders={}; momMode=!!STATE.mom; }
+  function saveState(){ STATE.mom=momMode; try{localStorage.setItem('dostizh_v3',JSON.stringify(STATE));}catch(e){} }
+  function dayObj(){ const k=key(curDate); if(!STATE.days[k])STATE.days[k]={}; return STATE.days[k]; }
+  function status(mid,tid){ const d=STATE.days[key(curDate)]; return (d&&d[mid]&&d[mid][tid])||'empty'; }
+  function setStatus(mid,tid,val){ const d=dayObj(); if(!d[mid])d[mid]={}; d[mid][tid]=val; }
+  function monthPoints(mid){ let n=0; const mp=monthPrefix(curDate); for(const k in STATE.days){ if(k.indexOf(mp)===0){ const md=STATE.days[k][mid]; if(md) for(const t in md) if(md[t]==='done') n++; } } return n; }
+  function levelOf(pts){ return {level:Math.min(7,1+Math.floor(pts/5)), progress:(pts%5)/5}; }
+  function reviewCount(){ let n=0; const d=STATE.days[key(curDate)]||{}; DATA.members.forEach(m=>{ if(isParent(m))return; m.tasks.forEach(t=>{ if((d[m.id]&&d[m.id][t.id])==='review')n++; }); }); return n; }
+
+  function render(){
+    document.getElementById('month').textContent=DATA.month||'';
+    const c=document.getElementById('content');
+    c.innerHTML = tab==='home'?renderHome():(tab==='shop'?renderShop():renderCal());
+  }
+
+  function face(m){ return m.image?`<img src="${m.image}" alt="" onerror="this.replaceWith(document.createTextNode('${m.character||''}'))">`:(m.character||''); }
+
+  function renderHome(){
+    const rc=reviewCount();
+    const isToday=key(curDate)===key(today);
+    const isYest=key(curDate)===key(addDays(today,-1));
+    let h='';
+    h+=`<div class="daynav"><button onclick="shiftDay(-1)">‹</button>
+      <div class="cur"><b>${isToday?'Сегодня':(isYest?'Вчера':curDate.getDate()+' '+MONTHS[curDate.getMonth()])}</b><small>${WD[curDate.getDay()]}, ${curDate.getDate()} ${MONTHS[curDate.getMonth()]}</small></div>
+      <button onclick="shiftDay(1)" ${isToday?'disabled':''}>›</button></div>`;
+    h+=`<div class="mombar"><div class="txt">${ momMode
+      ? '👑 <b>Режим родителя включён</b> — жми жёлтое ⏳, чтобы подтвердить ✅.'
+      : (rc? `⏳ <b>${rc}</b> ${plural(rc,['задание','задания','заданий'])} ждут проверки — включи режим родителя.` : 'Дети отмечают задания — мама или папа подтверждают 👑. Взрослые отмечают сами.') }</div>
+      <button class="lockbtn ${momMode?'on':''}" onclick="toggleMom()">${momMode?'🔓':'🔒'}</button></div>`;
+    const ranked=DATA.members.map(m=>({m,pts:monthPoints(m.id)})).sort((a,b)=>b.pts-a.pts);
+    const medals=['🥇','🥈','🥉'];
+    h+=`<div class="card"><h2>🏅 Рейтинг месяца</h2><div class="prize">🎁 В конце месяца — приз тому, у кого больше всех галочек</div>`;
+    ranked.forEach((r,i)=>{ const lv=levelOf(r.pts); h+=`<div class="rank-row"><div class="rank-medal">${medals[i]||(i+1)}</div><div class="rank-face">${face(r.m)}</div><div class="rank-name">${esc(r.m.name)}<small>${LEVELS[lv.level-1]}</small></div><div class="rank-pts">${r.pts} <span class="tick">✓</span></div></div>`; });
+    h+=`</div>`;
+    DATA.members.forEach(m=>{ h+=renderMember(m); });
+    return h;
+  }
+
+  function renderMember(m){
+    const pts=monthPoints(m.id); const lv=levelOf(pts); const pct=Math.round(lv.progress*100);
+    const t=m.tasks.map(tk=>{ const st=status(m.id,tk.id); const cls=st==='done'?'done':(st==='review'?'review':''); const ic=st==='done'?'✅':(st==='review'?'⏳':'▫️');
+      return `<div class="task ${cls}" onclick="tapTask('${m.id}','${tk.id}')"><span class="tico">${tk.icon||''}</span><span class="ttl">${esc(tk.title)}</span><span class="tstate">${ic}</span></div>`; }).join('');
+    const rem=STATE.reminders[m.id]||'';
+    return `<div class="member"><div class="m-head"><div class="m-face">${face(m)}</div><div class="m-info"><div class="m-name">${esc(m.name)} ${m.age?`<span>${m.age} лет</span>`:''}</div><div class="m-lvl">${LEVELS[lv.level-1]} · ур. ${lv.level} · ${pts} очк.</div>${isParent(m)?'<div class="m-badge">взрослый — отмечает сам</div>':''}</div><div class="m-pts"><b>${pts}</b><small>очков</small></div></div><div class="bar"><i style="width:${pct}%"></i></div><div class="tasks">${t}</div><div class="remind">🔔 Напоминание: <input type="time" value="${rem}" onchange="setRemind('${m.id}',this.value)"></div></div>`;
+  }
+
+  window.tapTask=function(mid,tid){
+    const m=DATA.members.find(x=>x.id===mid); if(!m)return;
+    const st=status(mid,tid);
+    if(isParent(m)){
+      if(st==='done'){ setStatus(mid,tid,'empty'); haptic('rigid'); }
+      else { setStatus(mid,tid,'done'); haptic('medium'); celebrate(); }
+    } else if(momMode){
+      if(st==='review'){ setStatus(mid,tid,'done'); haptic('medium'); celebrate(); }
+      else if(st==='done'){ setStatus(mid,tid,'empty'); haptic('rigid'); }
+      else { setStatus(mid,tid,'review'); haptic('light'); }
+    } else {
+      if(st==='empty'){ setStatus(mid,tid,'review'); haptic('light'); smallConfetti(); }
+      else if(st==='review'){ setStatus(mid,tid,'empty'); haptic('light'); }
+      else { haptic('light'); }
+    }
+    saveState(); render();
+  };
+  window.setRemind=function(mid,val){ STATE.reminders[mid]=val; saveState(); };
+  window.toggleMom=function(){ momMode=!momMode; haptic('medium'); saveState(); render(); };
+  window.shiftDay=function(d){ const nd=addDays(curDate,d); if(nd>today)return; curDate=nd; haptic('light'); render(); };
+
+  function renderShop(){
+    let rows=DATA.shopping.map(s=>`<div class="lrow ${s.bought?'bought':''}"><div class="chk" onclick="toggleBuy(${s.id})">${s.bought?'✓':''}</div><div class="lt">${esc(s.text)}</div><button class="addbtn" style="width:38px;background:#5b3d25;border-color:#3c2717" onclick="delBuy(${s.id})">✕</button></div>`).join('');
+    if(!DATA.shopping.length) rows='<div class="fail">Список пуст. Добавь, что купить.</div>';
+    return `<div class="card"><h2>🛒 Список покупок</h2><div class="add-row"><input id="shopin" placeholder="Что купить? Например: хлеб" onkeydown="if(event.key==='Enter')addBuy()"><button class="addbtn" onclick="addBuy()">+</button></div>${rows}</div>`;
+  }
+  window.addBuy=function(){const el=document.getElementById('shopin');const v=el.value.trim();if(!v)return;DATA.shopping.push({id:Date.now(),text:v,bought:false});STATE.shopping=DATA.shopping;saveState();render();haptic('medium');setTimeout(()=>{const n=document.getElementById('shopin');if(n)n.focus();},0);};
+  window.toggleBuy=function(id){const s=DATA.shopping.find(x=>x.id===id);if(s){s.bought=!s.bought;STATE.shopping=DATA.shopping;saveState();render();haptic('light');}};
+  window.delBuy=function(id){DATA.shopping=DATA.shopping.filter(x=>x.id!==id);STATE.shopping=DATA.shopping;saveState();render();haptic('rigid');};
+
+  function renderCal(){
+    const sorted=[...DATA.events].sort((a,b)=>new Date(a.date)-new Date(b.date));
+    let rows=sorted.map(e=>{const dt=new Date(e.date+'T00:00:00');const diff=Math.round((dt-today)/86400000);let when=diff<0?'прошло':(diff===0?'сегодня':(diff===1?'завтра':'через '+diff+' '+plural(diff,['день','дня','дней'])));
+      return `<div class="lrow"><div class="datebadge"><b>${dt.getDate()}</b><small>${MONTHS[dt.getMonth()]}</small></div><div class="lt">${esc(e.text)}<div class="when">${when} · ${dt.getFullYear()}</div></div><button class="addbtn" style="width:38px;background:#5b3d25;border-color:#3c2717" onclick="delEv(${e.id})">✕</button></div>`;}).join('');
+    if(!DATA.events.length) rows='<div class="fail">Событий нет. Добавь важную дату.</div>';
+    return `<div class="card"><h2>📅 Важные даты</h2><div class="add-row"><input id="evtxt" placeholder="Событие. Например: день рождения"></div><div class="add-row"><input id="evdate" type="date"><button class="addbtn" onclick="addEv()">+</button></div>${rows}</div>`;
+  }
+  window.addEv=function(){const t=document.getElementById('evtxt'),d=document.getElementById('evdate');if(!t.value.trim()){alert('Впиши название события');return;}if(!d.value){alert('Выбери дату');return;}DATA.events.push({id:Date.now(),text:t.value.trim(),date:d.value});STATE.events=DATA.events;saveState();render();haptic('medium');};
+  window.delEv=function(id){DATA.events=DATA.events.filter(x=>x.id!==id);STATE.events=DATA.events;saveState();render();haptic('rigid');};
+
+  window.switchTab=function(name){tab=name;haptic('light');['home','shop','cal'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('active',t===name));render();};
+
+  function smallConfetti(){ burst(16); }
+  function celebrate(){ burst(46); const hero=document.getElementById('hero'); hero.classList.remove('on'); void hero.offsetWidth; hero.classList.add('on'); setTimeout(()=>hero.classList.remove('on'),4500); }
+  function burst(n){ const box=document.getElementById('confetti'); box.classList.add('on'); const cols=['#ffd24a','#3fbf52','#7b5cff','#e0a72e','#6ec1f0','#ff6b6b'];
+    for(let i=0;i<n;i++){const d=document.createElement('div');d.className='conf';d.style.left=Math.random()*100+'%';d.style.background=cols[i%cols.length];d.style.animationDuration=(1.5+Math.random()*1.3)+'s';box.appendChild(d);}
+    setTimeout(()=>{box.classList.remove('on');box.innerHTML='';},3000); }
+
+  function boot(data){ DATA=data; if(!DATA.shopping)DATA.shopping=[]; if(!DATA.events)DATA.events=[];
+    loadState();
+    if(STATE.shopping)DATA.shopping=STATE.shopping; if(STATE.events)DATA.events=STATE.events;
+    const h=document.getElementById('heroImg'); if(DATA.heroImage)h.src=DATA.heroImage;
+    render(); }
+  fetch('data.json?v='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json();}).then(boot)
+    .catch(()=>{ try{ boot(JSON.parse(JSON.stringify(FALLBACK))); }catch(e){ document.getElementById('content').innerHTML='<div class="fail">Не удалось загрузить данные 😔</div>'; } });
+</script>
+</body>
+</html>

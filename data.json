@@ -1,0 +1,89 @@
+{
+  "month": "Июль 2026",
+  "heroImage": "hero.png",
+  "members": [
+    {
+      "id": "grigoriy",
+      "name": "Григорий",
+      "age": 12,
+      "role": "child",
+      "character": "🦊",
+      "image": "fox.png",
+      "level": 3,
+      "levelName": "Ученик",
+      "progress": 0.4,
+      "points": 8,
+      "tasks": [
+        { "id": "read",   "title": "Читать",           "icon": "📖", "status": "done" },
+        { "id": "teeth",  "title": "Чистить зубы",      "icon": "🦷", "status": "review" },
+        { "id": "walk",   "title": "Гулять",            "icon": "🌳", "status": "empty" },
+        { "id": "screen", "title": "Гаджеты ≤ 3 ч",     "icon": "📱", "status": "empty" },
+        { "id": "bed",    "title": "Заправить кровать", "icon": "🛏️", "status": "done" },
+        { "id": "math",   "title": "Таблица умножения", "icon": "✖️", "status": "empty" }
+      ]
+    },
+    {
+      "id": "kirill",
+      "name": "Кирилл",
+      "age": 10,
+      "role": "child",
+      "character": "🐱",
+      "image": "cat.png",
+      "level": 4,
+      "levelName": "Ученик",
+      "progress": 0.2,
+      "points": 6,
+      "tasks": [
+        { "id": "read",   "title": "Читать",            "icon": "📖", "status": "done" },
+        { "id": "teeth",  "title": "Чистить зубы",       "icon": "🦷", "status": "done" },
+        { "id": "walk",   "title": "Гулять",             "icon": "🌳", "status": "review" },
+        { "id": "screen", "title": "Гаджеты ≤ 3 ч",      "icon": "📱", "status": "empty" },
+        { "id": "bed",    "title": "Заправить кровать",  "icon": "🛏️", "status": "empty" },
+        { "id": "copy",   "title": "Переписать текст",   "icon": "📝", "status": "empty" }
+      ]
+    },
+    {
+      "id": "mama",
+      "name": "Мама",
+      "age": null,
+      "role": "parent_admin",
+      "character": "🐉",
+      "image": "dragon.png",
+      "level": 5,
+      "levelName": "Ученик",
+      "progress": 0.5,
+      "points": 7,
+      "tasks": [
+        { "id": "sport", "title": "Зарядка", "icon": "🤸", "status": "done" },
+        { "id": "read",  "title": "Читать",  "icon": "📖", "status": "empty" }
+      ]
+    },
+    {
+      "id": "evgeniy",
+      "name": "Папа",
+      "age": null,
+      "role": "parent_admin",
+      "character": "🦁",
+      "image": "lion.png",
+      "level": 2,
+      "levelName": "Новичок",
+      "progress": 0.3,
+      "points": 4,
+      "tasks": [
+        { "id": "sport", "title": "Спорт",  "icon": "🤸", "status": "empty" },
+        { "id": "read",  "title": "Читать", "icon": "📖", "status": "done" }
+      ]
+    }
+  ],
+  "shopping": [
+    { "id": 1, "text": "Хлеб",    "bought": false },
+    { "id": 2, "text": "Молоко",  "bought": true },
+    { "id": 3, "text": "Тетради", "bought": false },
+    { "id": 4, "text": "Яблоки",  "bought": false }
+  ],
+  "events": [
+    { "id": 1, "text": "День рождения Кирилла", "date": "2026-08-02" },
+    { "id": 2, "text": "1 сентября — в школу",  "date": "2026-09-01" },
+    { "id": 3, "text": "Поездка к бабушке",     "date": "2026-07-19" }
+  ]
+}
