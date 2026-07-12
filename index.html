@@ -39,8 +39,8 @@
   .whoami .wa-face{width:26px;height:26px;border:2px solid var(--panel-line);overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#6ec1f0,#8ed07a);}
   .whoami .wa-face img{width:100%;height:100%;object-fit:contain;}
   .whoami a{color:var(--gold);cursor:pointer;text-decoration:underline;}
+  .sync{font-size:11px;color:var(--muted);margin-top:4px;text-align:center;}
 
-  /* who-are-you picker */
   .picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;}
   .pick{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--panel2);border:4px solid var(--panel-line);box-shadow:4px 4px 0 rgba(0,0,0,.28);padding:12px 8px;cursor:pointer;}
   .pick:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(0,0,0,.28);}
@@ -104,6 +104,8 @@
   .addtask input{flex:1;min-width:0;padding:9px 10px;border:3px solid var(--panel-line);background:var(--empty-d);color:#fff;font-size:14px;outline:none;}
   .addtask input::placeholder{color:var(--muted);}
   .addtask button{flex:0 0 auto;width:42px;background:var(--accent);border:3px solid var(--accent-d);color:#fff;font-size:20px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
+  .remind{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:13px;color:var(--muted);}
+  .remind input{background:var(--empty-d);border:3px solid var(--panel-line);color:#fff;padding:7px 8px;font-size:14px;}
 
   .lrow{display:flex;align-items:center;gap:12px;background:var(--panel2);border:3px solid var(--panel-line);box-shadow:3px 3px 0 rgba(0,0,0,.25);padding:11px 12px;margin-bottom:9px;}
   .lrow .chk{width:24px;height:24px;flex:0 0 auto;border:3px solid var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;}
@@ -150,7 +152,7 @@
     <div class="month pixel" id="month">—</div>
     <div class="whoami" id="whoami"></div>
   </header>
-  <div id="content"></div>
+  <div id="content"><div class="card" style="text-align:center">Загрузка… ⏳</div></div>
 </div>
 
 <nav class="tabs">
@@ -164,11 +166,18 @@
 <div id="hero"><img id="heroImg" alt=""><div class="cheer">Победа! 🎉</div></div>
 
 <script>
+  const SUPA_URL='https://yqjtiakrlyehfmawbmpq.supabase.co';
+  const SUPA_KEY='sb_publishable_FFxhJ5tXbO4_P-nZWSUK_Q_eMOazsrZ';
+  async function db(path,opts){ opts=opts||{}; opts.headers=Object.assign({apikey:SUPA_KEY,Authorization:'Bearer '+SUPA_KEY,'Content-Type':'application/json'},opts.headers||{});
+    const r=await fetch(SUPA_URL+'/rest/v1/'+path,opts); if(!r.ok) throw new Error(r.status+' '+await r.text()); const t=await r.text(); return t?JSON.parse(t):null; }
+
   const tg = window.Telegram ? window.Telegram.WebApp : null;
   if(tg){ try{ tg.ready(); tg.expand(); }catch(e){} }
   function haptic(t){ try{ if(tg&&tg.HapticFeedback) tg.HapticFeedback.impactOccurred(t||'light'); }catch(e){} }
+  let TGID=null, TGNAME='';
+  try{ if(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user){ TGID=tg.initDataUnsafe.user.id; TGNAME=tg.initDataUnsafe.user.first_name||''; } }catch(e){}
 
-  const FALLBACK = {"month":"Июль 2026","heroImage":"hero.png","members":[
+  const DATA_STATIC = {"month":"Июль 2026","heroImage":"hero.png","members":[
     {"id":"grigoriy","name":"Григорий","age":12,"role":"child","character":"🦊","image":"fox.png","tasks":[
       {"id":"read","title":"Читать","icon":"📖"},{"id":"teeth","title":"Чистить зубы","icon":"🦷"},{"id":"walk","title":"Гулять","icon":"🌳"},{"id":"screen","title":"Гаджеты ≤ 3 ч","icon":"📱"},{"id":"bed","title":"Заправить кровать","icon":"🛏️"},{"id":"math","title":"Таблица умножения","icon":"✖️"}]},
     {"id":"kirill","name":"Кирилл","age":10,"role":"child","character":"🐱","image":"cat.png","tasks":[
@@ -176,16 +185,17 @@
     {"id":"mama","name":"Мама","age":null,"role":"parent_admin","character":"🐉","image":"dragon.png","tasks":[
       {"id":"sport","title":"Зарядка","icon":"🤸"},{"id":"read","title":"Читать","icon":"📖"}]},
     {"id":"evgeniy","name":"Папа","age":null,"role":"parent_admin","character":"🦁","image":"lion.png","tasks":[
-      {"id":"sport","title":"Спорт","icon":"🤸"},{"id":"read","title":"Читать","icon":"📖"}]}],
-    "shopping":[{"id":1,"text":"Хлеб","bought":false},{"id":2,"text":"Молоко","bought":true},{"id":3,"text":"Тетради","bought":false},{"id":4,"text":"Яблоки","bought":false}],
-    "events":[{"id":1,"text":"День рождения Кирилла","date":"2026-08-02"},{"id":2,"text":"1 сентября — в школу","date":"2026-09-01"},{"id":3,"text":"Поездка к бабушке","date":"2026-07-19"}]};
+      {"id":"sport","title":"Спорт","icon":"🤸"},{"id":"read","title":"Читать","icon":"📖"}]}]};
 
   const LEVELS=['Новичок','Ученик','Растёт','Умелец','Мастер','Герой','Легенда'];
   const MONTHS=['янв','фев','мар','апр','мая','июн','июл','авг','сен','окт','ноя','дек'];
   const WD=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
-  let DATA=null, momMode=false, tab='home';
+  let DATA=DATA_STATIC, momMode=false, tab='home', loaded=false;
   let today=new Date(); today.setHours(0,0,0,0);
   let curDate=new Date(today);
+  let ME=null; // member id
+  let MARKS={}, CUSTOM={}, SHOP=[], EVENTS=[];
+  let REMIND={}; try{REMIND=JSON.parse(localStorage.getItem('remind'))||{};}catch(e){}
 
   function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
   function plural(n,f){n=Math.abs(n)%100;const n1=n%10;if(n>10&&n<20)return f[2];if(n1>1&&n1<5)return f[1];if(n1===1)return f[0];return f[2];}
@@ -194,45 +204,62 @@
   function addDays(base,d){ const x=new Date(base); x.setDate(x.getDate()+d); x.setHours(0,0,0,0); return x; }
   function isParent(m){ return m && (m.role==='parent'||m.role==='parent_admin'); }
   function member(id){ return DATA.members.find(x=>x.id===id); }
-  function meMember(){ return STATE.me?member(STATE.me):null; }
+  function meMember(){ return ME?member(ME):null; }
   function meIsParent(){ return isParent(meMember()); }
-  function allTasks(m){ return m.tasks.concat(STATE.customTasks[m.id]||[]); }
-
-  let STATE={days:{},shopping:null,events:null,mom:false,reminders:{},me:null,customTasks:{}};
-  function loadState(){ try{const s=JSON.parse(localStorage.getItem('dostizh_v4'));if(s)STATE=Object.assign(STATE,s);}catch(e){} if(!STATE.reminders)STATE.reminders={}; if(!STATE.customTasks)STATE.customTasks={}; momMode=!!STATE.mom; }
-  function saveState(){ STATE.mom=momMode; try{localStorage.setItem('dostizh_v4',JSON.stringify(STATE));}catch(e){} }
-  function dayObj(){ const k=key(curDate); if(!STATE.days[k])STATE.days[k]={}; return STATE.days[k]; }
-  function status(mid,tid){ const d=STATE.days[key(curDate)]; return (d&&d[mid]&&d[mid][tid])||'empty'; }
-  function setStatus(mid,tid,val){ const d=dayObj(); if(!d[mid])d[mid]={}; d[mid][tid]=val; }
-  function monthPoints(mid){ let n=0; const mp=monthPrefix(curDate); for(const k in STATE.days){ if(k.indexOf(mp)===0){ const md=STATE.days[k][mid]; if(md) for(const t in md) if(md[t]==='done') n++; } } return n; }
+  function allTasks(m){ return m.tasks.concat(CUSTOM[m.id]||[]); }
+  function status(mid,tid){ return MARKS[key(curDate)+'|'+mid+'|'+tid]||'empty'; }
+  function monthPoints(mid){ let n=0; const mp=monthPrefix(curDate)+'-'; for(const k in MARKS){ const p=k.split('|'); if(p[1]===mid && p[0].indexOf(mp)===0 && MARKS[k]==='done') n++; } return n; }
   function levelOf(pts){ return {level:Math.min(7,1+Math.floor(pts/5)), progress:(pts%5)/5}; }
-  function reviewCount(){ let n=0; const d=STATE.days[key(curDate)]||{}; DATA.members.forEach(m=>{ if(isParent(m))return; allTasks(m).forEach(t=>{ if((d[m.id]&&d[m.id][t.id])==='review')n++; }); }); return n; }
-
+  function reviewCount(){ let n=0; const kd=key(curDate); DATA.members.forEach(m=>{ if(isParent(m))return; allTasks(m).forEach(t=>{ if(MARKS[kd+'|'+m.id+'|'+t.id]==='review')n++; }); }); return n; }
   function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(window.__tt); window.__tt=setTimeout(()=>el.classList.remove('on'),1900); }
 
+  // ---------- DB ops ----------
+  async function loadAll(){
+    const mp=monthPrefix(curDate);
+    const start=mp+'-01', end=mp+'-31';
+    const [marks,cust,shop,evs]=await Promise.all([
+      db('marks?select=*&day=gte.'+start+'&day=lte.'+end),
+      db('custom_tasks?select=*'),
+      db('shopping?select=*&order=id.desc'),
+      db('events?select=*&order=on_date.asc')
+    ]);
+    MARKS={}; (marks||[]).forEach(m=>MARKS[m.day+'|'+m.member_id+'|'+m.task_id]=m.status);
+    CUSTOM={}; (cust||[]).forEach(c=>{(CUSTOM[c.member_id]=CUSTOM[c.member_id]||[]).push({id:c.id,title:c.title,icon:c.icon||'📌'});});
+    SHOP=(shop||[]).map(s=>({id:s.id,text:s.txt,bought:s.bought}));
+    EVENTS=(evs||[]).map(e=>({id:e.id,text:e.txt,date:e.on_date}));
+  }
+  async function loadMarksOnly(){
+    const mp=monthPrefix(curDate);
+    const marks=await db('marks?select=*&day=gte.'+mp+'-01&day=lte.'+mp+'-31');
+    MARKS={}; (marks||[]).forEach(m=>MARKS[m.day+'|'+m.member_id+'|'+m.task_id]=m.status);
+  }
+  async function pushMark(mid,tid,val){ await db('marks',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({day:key(curDate),member_id:mid,task_id:tid,status:val})}); }
+  async function loadIdentity(){ if(!TGID)return null; const rows=await db('identities?select=*&tg_id=eq.'+TGID); return (rows&&rows.length)?rows[0].member_id:null; }
+  async function claimIdentity(id){ if(TGID){ await db('identities',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({tg_id:TGID,member_id:id,tg_name:TGNAME})}); } }
+
+  // ---------- render ----------
   function render(){
     document.getElementById('month').textContent=DATA.month||'';
     renderWhoami();
     const c=document.getElementById('content');
-    if(!STATE.me){ c.innerHTML=renderPicker(); return; }
+    if(!loaded){ return; }
+    if(!ME){ c.innerHTML=renderPicker(); return; }
     c.innerHTML = tab==='home'?renderHome():(tab==='shop'?renderShop():renderCal());
   }
-
   function face(m){ return m.image?`<img src="${m.image}" alt="" onerror="this.replaceWith(document.createTextNode('${m.character||''}'))">`:(m.character||''); }
-
   function renderWhoami(){
     const w=document.getElementById('whoami');
-    if(!STATE.me){ w.innerHTML=''; return; }
-    const m=meMember();
-    w.innerHTML=`Ты: <span class="wa-face">${face(m)}</span> <b>${esc(m.name)}</b> · <a onclick="changeMe()">сменить</a>`;
+    if(!ME){ w.innerHTML=''; return; }
+    const m=meMember(); const canSwitch=!TGID; // в Telegram личность закреплена
+    w.innerHTML=`Ты: <span class="wa-face">${face(m)}</span> <b>${esc(m.name)}</b>`+(canSwitch?` · <a onclick="changeMe()">сменить</a>`:'');
   }
-
   function renderPicker(){
     let cards=DATA.members.map(m=>`<div class="pick" onclick="pickMe('${m.id}')"><div class="pf">${face(m)}</div><b>${esc(m.name)}</b><small>${isParent(m)?'взрослый':((m.age||'')+' лет')}</small></div>`).join('');
-    return `<div class="card"><h2>Кто ты?</h2><div class="hint">Выбери себя. Отмечать сможешь только <b>свои</b> задания, а видеть — достижения всех (это же соревнование 🏆).</div><div class="picker">${cards}</div></div>`;
+    const note=TGID?'Это запомнится за твоим Telegram — потом отмечать сможешь только свои задания.':'Выбери себя (демо-режим на этом устройстве).';
+    return `<div class="card"><h2>Кто ты?</h2><div class="hint">${note} Видеть достижения будешь у всех — это соревнование 🏆.</div><div class="picker">${cards}</div></div>`;
   }
-  window.pickMe=function(id){ STATE.me=id; momMode=false; saveState(); haptic('medium'); render(); };
-  window.changeMe=function(){ STATE.me=null; momMode=false; saveState(); render(); };
+  window.pickMe=async function(id){ ME=id; momMode=false; localStorage.setItem('me_fallback',id); render(); try{ await claimIdentity(id); }catch(e){ toast('Не удалось сохранить в базу'); } haptic('medium'); };
+  window.changeMe=function(){ ME=null; momMode=false; localStorage.removeItem('me_fallback'); render(); };
 
   function renderHome(){
     const rc=reviewCount();
@@ -245,7 +272,7 @@
     if(meIsParent()){
       h+=`<div class="mombar"><div class="txt">${ momMode
         ? '👑 <b>Режим проверки включён</b> — жми жёлтое ⏳ у детей, чтобы подтвердить ✅.'
-        : (rc? `⏳ <b>${rc}</b> ${plural(rc,['задание','задания','заданий'])} ждут проверки — включи режим проверки.` : 'Ты взрослый: отмечаешь свои задания сам, а детские — подтверждаешь 👑.') }</div>
+        : (rc? `⏳ <b>${rc}</b> ${plural(rc,['задание','задания','заданий'])} ждут проверки — включи режим проверки.` : 'Ты взрослый: свои задания отмечаешь сам, детские — подтверждаешь 👑.') }</div>
         <button class="lockbtn ${momMode?'on':''}" onclick="toggleMom()">${momMode?'🔓':'🔒'}</button></div>`;
     } else {
       h+=`<div class="mombar"><div class="txt">Отмечай <b>свои</b> задания — они уйдут «на проверку» ⏳. Мама или папа подтвердят ✅.</div></div>`;
@@ -258,75 +285,73 @@
     DATA.members.forEach(m=>{ h+=renderMember(m); });
     return h;
   }
-
-  function canAdd(m){ return STATE.me===m.id || meIsParent(); }
-
+  function canAdd(m){ return ME===m.id || meIsParent(); }
   function renderMember(m){
     const pts=monthPoints(m.id); const lv=levelOf(pts); const pct=Math.round(lv.progress*100);
-    const mine=STATE.me===m.id;
+    const mine=ME===m.id;
     const t=allTasks(m).map(tk=>{ const st=status(m.id,tk.id); const cls=st==='done'?'done':(st==='review'?'review':''); const ic=st==='done'?'✅':(st==='review'?'⏳':'▫️');
-      const canTap = (STATE.me===m.id) || (meIsParent() && momMode && !isParent(m));
-      const locked = canTap?'':'locked';
-      const isCustom = tk.id.indexOf('c')===0 && (STATE.customTasks[m.id]||[]).some(x=>x.id===tk.id);
-      const del = (isCustom && canAdd(m)) ? `<span class="del" onclick="event.stopPropagation();delTask('${m.id}','${tk.id}')">✕</span>` : '';
+      const canTap=(ME===m.id)||(meIsParent()&&momMode&&!isParent(m));
+      const locked=canTap?'':'locked';
+      const isCustom=(CUSTOM[m.id]||[]).some(x=>x.id===tk.id);
+      const del=(isCustom&&canAdd(m))?`<span class="del" onclick="event.stopPropagation();delTask('${m.id}','${tk.id}')">✕</span>`:'';
       return `<div class="task ${cls} ${locked}" onclick="tapTask('${m.id}','${tk.id}')"><span class="tico">${tk.icon||'📌'}</span><span class="ttl">${esc(tk.title)}</span><span class="tstate">${ic}</span>${del}</div>`; }).join('');
-    const addRow = canAdd(m) ? `<div class="addtask"><input id="ta-${m.id}" placeholder="Добавить дело для ${esc(m.name)}" onkeydown="if(event.key==='Enter')addTask('${m.id}')"><button onclick="addTask('${m.id}')">+</button></div>` : '';
-    return `<div class="member ${mine?'mine':''}"><div class="m-head"><div class="m-face">${face(m)}</div><div class="m-info"><div class="m-name">${esc(m.name)} ${m.age?`<span class="age">${m.age} лет</span>`:''}${mine?'<span class="you">ты</span>':''}</div><div class="m-lvl">${LEVELS[lv.level-1]} · ур. ${lv.level} · ${pts} очк.</div>${isParent(m)?'<div class="m-badge">взрослый — отмечает сам</div>':''}</div><div class="m-pts"><b>${pts}</b><small>очков</small></div></div><div class="bar"><i style="width:${pct}%"></i></div><div class="tasks">${t}</div>${addRow}<div class="remind">🔔 Напоминание: <input type="time" value="${STATE.reminders[m.id]||''}" onchange="setRemind('${m.id}',this.value)"></div></div>`;
+    const addRow=canAdd(m)?`<div class="addtask"><input id="ta-${m.id}" placeholder="Добавить дело для ${esc(m.name)}" onkeydown="if(event.key==='Enter')addTask('${m.id}')"><button onclick="addTask('${m.id}')">+</button></div>`:'';
+    return `<div class="member ${mine?'mine':''}"><div class="m-head"><div class="m-face">${face(m)}</div><div class="m-info"><div class="m-name">${esc(m.name)} ${m.age?`<span class="age">${m.age} лет</span>`:''}${mine?'<span class="you">ты</span>':''}</div><div class="m-lvl">${LEVELS[lv.level-1]} · ур. ${lv.level} · ${pts} очк.</div>${isParent(m)?'<div class="m-badge">взрослый — отмечает сам</div>':''}</div><div class="m-pts"><b>${pts}</b><small>очков</small></div></div><div class="bar"><i style="width:${pct}%"></i></div><div class="tasks">${t}</div>${addRow}<div class="remind">🔔 Напоминание: <input type="time" value="${REMIND[m.id]||''}" onchange="setRemind('${m.id}',this.value)"></div></div>`;
   }
 
-  window.tapTask=function(mid,tid){
-    const target=member(mid); const me=meMember();
-    const own = STATE.me===mid;
+  window.tapTask=async function(mid,tid){
+    const target=member(mid); const me=meMember(); const own=ME===mid;
+    let nv=null, cel=false;
     if(own){
       const st=status(mid,tid);
-      if(isParent(me)){ if(st==='done'){setStatus(mid,tid,'empty');haptic('rigid');} else {setStatus(mid,tid,'done');haptic('medium');celebrate();} }
-      else { if(st==='empty'){setStatus(mid,tid,'review');haptic('light');smallConfetti();} else if(st==='review'){setStatus(mid,tid,'empty');haptic('light');} }
+      if(isParent(me)){ if(st==='done'){nv='empty';haptic('rigid');} else {nv='done';haptic('medium');cel=true;} }
+      else { if(st==='empty'){nv='review';haptic('light');smallConfetti();} else if(st==='review'){nv='empty';haptic('light');} else {return;} }
     } else {
-      // someone else's card
-      if(meIsParent() && momMode && !isParent(target)){
+      if(meIsParent()&&momMode&&!isParent(target)){
         const st=status(mid,tid);
-        if(st==='review'){ setStatus(mid,tid,'done'); haptic('medium'); celebrate(); }
-        else if(st==='done'){ setStatus(mid,tid,'empty'); haptic('rigid'); }
+        if(st==='review'){nv='done';haptic('medium');cel=true;}
+        else if(st==='done'){nv='empty';haptic('rigid');}
         else { toast('Ребёнок сам отмечает — подтвердить можно жёлтое ⏳'); return; }
-      } else {
-        toast(meIsParent()? 'Включи 🔒 режим проверки, чтобы подтверждать детям' : 'Отмечать можно только свои задания 🙂');
-        haptic('light'); return;
-      }
+      } else { toast(meIsParent()?'Включи 🔒 режим проверки, чтобы подтверждать детям':'Отмечать можно только свои задания 🙂'); haptic('light'); return; }
     }
-    saveState(); render();
+    MARKS[key(curDate)+'|'+mid+'|'+tid]=nv; if(cel)celebrate(); render();
+    try{ await pushMark(mid,tid,nv); }catch(e){ toast('Нет связи с базой — не сохранилось'); }
   };
-  window.setRemind=function(mid,val){ STATE.reminders[mid]=val; saveState(); };
-  window.toggleMom=function(){ momMode=!momMode; haptic('medium'); saveState(); render(); };
-  window.shiftDay=function(d){ const nd=addDays(curDate,d); if(nd>today)return; curDate=nd; haptic('light'); render(); };
+  window.setRemind=function(mid,val){ REMIND[mid]=val; try{localStorage.setItem('remind',JSON.stringify(REMIND));}catch(e){} };
+  window.toggleMom=function(){ momMode=!momMode; haptic('medium'); render(); };
+  window.shiftDay=async function(d){ const nd=addDays(curDate,d); if(nd>today)return; curDate=nd; haptic('light'); render(); try{await loadMarksOnly();render();}catch(e){} };
 
-  window.addTask=function(mid){
-    const el=document.getElementById('ta-'+mid); if(!el)return; const v=el.value.trim(); if(!v)return;
-    if(!STATE.customTasks[mid])STATE.customTasks[mid]=[];
-    STATE.customTasks[mid].push({id:'c'+Date.now(),title:v,icon:'📌'});
-    saveState(); if(el)el.blur(); render(); haptic('medium'); toast('Дело добавлено');
-  };
-  window.delTask=function(mid,tid){ STATE.customTasks[mid]=(STATE.customTasks[mid]||[]).filter(x=>x.id!==tid); const d=STATE.days[key(curDate)]; if(d&&d[mid])delete d[mid][tid]; saveState(); render(); haptic('rigid'); };
+  window.addTask=async function(mid){ const el=document.getElementById('ta-'+mid); if(!el)return; const v=el.value.trim(); if(!v)return;
+    const id='c'+Date.now(); (CUSTOM[mid]=CUSTOM[mid]||[]).push({id,title:v,icon:'📌'}); if(el)el.blur(); render(); haptic('medium'); toast('Дело добавлено');
+    try{ await db('custom_tasks',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id,member_id:mid,title:v,icon:'📌'})}); }catch(e){ toast('Не сохранилось в базу'); } };
+  window.delTask=async function(mid,tid){ CUSTOM[mid]=(CUSTOM[mid]||[]).filter(x=>x.id!==tid); render(); haptic('rigid');
+    try{ await db('custom_tasks?id=eq.'+encodeURIComponent(tid),{method:'DELETE',headers:{Prefer:'return=minimal'}}); }catch(e){} };
 
   function renderShop(){
-    let rows=DATA.shopping.map(s=>`<div class="lrow ${s.bought?'bought':''}"><div class="chk" onclick="toggleBuy(${s.id})">${s.bought?'✓':''}</div><div class="lt">${esc(s.text)}</div><button class="addbtn" style="width:38px;background:#5b3d25;border-color:#3c2717" onclick="delBuy(${s.id})">✕</button></div>`).join('');
-    if(!DATA.shopping.length) rows='<div class="fail">Список пуст. Добавь, что купить.</div>';
+    let rows=SHOP.map(s=>`<div class="lrow ${s.bought?'bought':''}"><div class="chk" onclick="toggleBuy(${s.id})">${s.bought?'✓':''}</div><div class="lt">${esc(s.text)}</div><button class="addbtn" style="width:38px;background:#5b3d25;border-color:#3c2717" onclick="delBuy(${s.id})">✕</button></div>`).join('');
+    if(!SHOP.length) rows='<div class="fail">Список пуст. Добавь, что купить.</div>';
     return `<div class="card"><h2>🛒 Список покупок</h2><div class="add-row"><input id="shopin" placeholder="Что купить? Например: хлеб" onkeydown="if(event.key==='Enter')addBuy()"><button class="addbtn" onclick="addBuy()">+</button></div>${rows}</div>`;
   }
-  window.addBuy=function(){const el=document.getElementById('shopin');const v=el.value.trim();if(!v)return;DATA.shopping.unshift({id:Date.now(),text:v,bought:false});STATE.shopping=DATA.shopping;saveState();if(el)el.blur();render();haptic('medium');toast('Добавлено в список');};
-  window.toggleBuy=function(id){const s=DATA.shopping.find(x=>x.id===id);if(s){s.bought=!s.bought;STATE.shopping=DATA.shopping;saveState();render();haptic('light');}};
-  window.delBuy=function(id){DATA.shopping=DATA.shopping.filter(x=>x.id!==id);STATE.shopping=DATA.shopping;saveState();render();haptic('rigid');};
+  window.addBuy=async function(){const el=document.getElementById('shopin');const v=el.value.trim();if(!v)return;const id=Date.now();SHOP.unshift({id,text:v,bought:false});if(el)el.blur();render();haptic('medium');toast('Добавлено');
+    try{await db('shopping',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id,txt:v,bought:false})});}catch(e){toast('Не сохранилось');}};
+  window.toggleBuy=async function(id){const s=SHOP.find(x=>x.id===id);if(!s)return;s.bought=!s.bought;render();haptic('light');
+    try{await db('shopping?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({bought:s.bought})});}catch(e){}};
+  window.delBuy=async function(id){SHOP=SHOP.filter(x=>x.id!==id);render();haptic('rigid');
+    try{await db('shopping?id=eq.'+id,{method:'DELETE',headers:{Prefer:'return=minimal'}});}catch(e){}};
 
   function renderCal(){
-    const sorted=[...DATA.events].sort((a,b)=>new Date(a.date)-new Date(b.date));
+    const sorted=[...EVENTS].sort((a,b)=>new Date(a.date)-new Date(b.date));
     let rows=sorted.map(e=>{const dt=new Date(e.date+'T00:00:00');const diff=Math.round((dt-today)/86400000);let when=diff<0?'прошло':(diff===0?'сегодня':(diff===1?'завтра':'через '+diff+' '+plural(diff,['день','дня','дней'])));
       return `<div class="lrow"><div class="datebadge"><b>${dt.getDate()}</b><small>${MONTHS[dt.getMonth()]}</small></div><div class="lt">${esc(e.text)}<div class="when">${when} · ${dt.getFullYear()}</div></div><button class="addbtn" style="width:38px;background:#5b3d25;border-color:#3c2717" onclick="delEv(${e.id})">✕</button></div>`;}).join('');
-    if(!DATA.events.length) rows='<div class="fail">Событий нет. Добавь важную дату.</div>';
+    if(!EVENTS.length) rows='<div class="fail">Событий нет. Добавь важную дату.</div>';
     return `<div class="card"><h2>📅 Важные даты</h2><div class="evform"><label>Что за событие</label><input id="evtxt" placeholder="Например: День рождения бабушки"><label>Когда</label><input id="evdate" type="date"><button class="addwide" onclick="addEv()">➕ Добавить событие</button></div>${rows}</div>`;
   }
-  window.addEv=function(){const t=document.getElementById('evtxt'),d=document.getElementById('evdate');if(!t.value.trim()){toast('Впиши название события');return;}if(!d.value){toast('Выбери дату');return;}DATA.events.push({id:Date.now(),text:t.value.trim(),date:d.value});STATE.events=DATA.events;saveState();if(t)t.blur();render();haptic('medium');toast('Событие добавлено');};
-  window.delEv=function(id){DATA.events=DATA.events.filter(x=>x.id!==id);STATE.events=DATA.events;saveState();render();haptic('rigid');};
+  window.addEv=async function(){const t=document.getElementById('evtxt'),d=document.getElementById('evdate');if(!t.value.trim()){toast('Впиши название события');return;}if(!d.value){toast('Выбери дату');return;}const id=Date.now();EVENTS.push({id,text:t.value.trim(),date:d.value});if(t)t.blur();render();haptic('medium');toast('Событие добавлено');
+    try{await db('events',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id,txt:t.value.trim(),on_date:d.value})});}catch(e){toast('Не сохранилось');}};
+  window.delEv=async function(id){EVENTS=EVENTS.filter(x=>x.id!==id);render();haptic('rigid');
+    try{await db('events?id=eq.'+id,{method:'DELETE',headers:{Prefer:'return=minimal'}});}catch(e){}};
 
-  window.switchTab=function(name){tab=name;haptic('light');['home','shop','cal'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('active',t===name));render();};
+  window.switchTab=async function(name){tab=name;haptic('light');['home','shop','cal'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('active',t===name));render(); try{await loadAll();render();}catch(e){}};
 
   function smallConfetti(){ burst(16); }
   function celebrate(){ burst(46); const hero=document.getElementById('hero'); hero.classList.remove('on'); void hero.offsetWidth; hero.classList.add('on'); setTimeout(()=>hero.classList.remove('on'),4500); }
@@ -334,13 +359,21 @@
     for(let i=0;i<n;i++){const d=document.createElement('div');d.className='conf';d.style.left=Math.random()*100+'%';d.style.background=cols[i%cols.length];d.style.animationDuration=(1.5+Math.random()*1.3)+'s';box.appendChild(d);}
     setTimeout(()=>{box.classList.remove('on');box.innerHTML='';},3000); }
 
-  function boot(data){ DATA=data; if(!DATA.shopping)DATA.shopping=[]; if(!DATA.events)DATA.events=[];
-    loadState();
-    if(STATE.shopping)DATA.shopping=STATE.shopping; if(STATE.events)DATA.events=STATE.events;
+  // ---------- boot + polling ----------
+  async function boot(){
     const h=document.getElementById('heroImg'); if(DATA.heroImage)h.src=DATA.heroImage;
-    render(); }
-  fetch('data.json?v='+Date.now()).then(r=>{if(!r.ok)throw 0;return r.json();}).then(boot)
-    .catch(()=>{ try{ boot(JSON.parse(JSON.stringify(FALLBACK))); }catch(e){ document.getElementById('content').innerHTML='<div class="fail">Не удалось загрузить данные 😔</div>'; } });
+    try{
+      ME = await loadIdentity();
+      if(!ME && !TGID){ ME=localStorage.getItem('me_fallback')||null; }
+      await loadAll();
+      loaded=true; render();
+    }catch(e){
+      document.getElementById('content').innerHTML='<div class="fail">Не удалось подключиться к базе 😔<br><small>'+esc(String(e).slice(0,120))+'</small></div>';
+    }
+    // sync каждые 6с (когда открыто и на вкладке заданий)
+    setInterval(async()=>{ if(document.hidden)return; if(tab!=='home')return; if(!ME)return; try{ await loadMarksOnly(); render(); }catch(e){} },6000);
+  }
+  boot();
 </script>
 </body>
 </html>
