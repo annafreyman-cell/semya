@@ -29,13 +29,26 @@
   body::before{content:"";position:fixed;top:0;left:0;right:0;height:120px;z-index:0;pointer-events:none;
     background:radial-gradient(circle at 12% 30px,#fff 0 18px,transparent 19px),radial-gradient(circle at 20% 42px,#fff 0 22px,transparent 23px),radial-gradient(circle at 70% 26px,#fff 0 16px,transparent 17px),radial-gradient(circle at 82% 44px,#fff 0 24px,transparent 25px);opacity:.7;}
   #app{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:14px 12px 96px;}
-  /* pixel font ONLY on the big title + month badge */
   .pixel{font-family:"Pixelify Sans","Courier New",monospace;font-weight:700;letter-spacing:.5px;}
   .card h2{font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;letter-spacing:0;}
 
-  header.top{text-align:center;padding:6px 0 10px;}
+  header.top{text-align:center;padding:6px 0 6px;}
   header.top h1{margin:0;font-size:28px;text-shadow:2px 2px 0 var(--grass-d),3px 3px 0 rgba(0,0,0,.25);}
   header.top .month{display:inline-block;margin-top:8px;background:var(--dirt);color:#fff;padding:4px 14px;border:3px solid var(--dirt-d);box-shadow:3px 3px 0 rgba(0,0,0,.25);font-size:15px;}
+  .whoami{display:flex;align-items:center;justify-content:center;gap:7px;margin-top:9px;font-size:13px;color:#fff;}
+  .whoami .wa-face{width:26px;height:26px;border:2px solid var(--panel-line);overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#6ec1f0,#8ed07a);}
+  .whoami .wa-face img{width:100%;height:100%;object-fit:contain;}
+  .whoami a{color:var(--gold);cursor:pointer;text-decoration:underline;}
+
+  /* who-are-you picker */
+  .picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px;}
+  .pick{display:flex;flex-direction:column;align-items:center;gap:6px;background:var(--panel2);border:4px solid var(--panel-line);box-shadow:4px 4px 0 rgba(0,0,0,.28);padding:12px 8px;cursor:pointer;}
+  .pick:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(0,0,0,.28);}
+  .pick .pf{width:64px;height:64px;border:3px solid var(--panel-line);overflow:hidden;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#7fc9f2,#8ed07a);}
+  .pick .pf img{width:100%;height:100%;object-fit:contain;}
+  .pick b{font-size:15px;}
+  .pick small{color:var(--muted);font-size:11px;}
+  .hint{color:var(--muted);font-size:13px;margin:0 0 10px;line-height:1.4;}
 
   .daynav{display:flex;align-items:center;gap:8px;margin:12px 0;}
   .daynav button{flex:0 0 auto;background:var(--panel2);border:3px solid var(--panel-line);color:#fff;font-size:18px;width:44px;height:44px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
@@ -63,12 +76,14 @@
   .rank-pts .tick{color:var(--done);}
 
   .member{background:var(--panel);border:4px solid var(--panel-line);box-shadow:5px 5px 0 rgba(0,0,0,.28);padding:12px;margin-bottom:14px;}
+  .member.mine{border-color:var(--gold);}
   .m-head{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
   .m-face{width:56px;height:56px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#7fc9f2,#8ed07a);border:3px solid var(--panel-line);box-shadow:2px 2px 0 rgba(0,0,0,.3);overflow:hidden;font-size:32px;}
   .m-face img{width:100%;height:100%;object-fit:contain;}
   .m-info{flex:1;min-width:0;}
   .m-name{font-size:16px;font-weight:700;color:#fff;}
-  .m-name span{color:var(--muted);font-weight:400;font-size:12px;}
+  .m-name .you{background:var(--gold);color:#4a2f00;font-size:10px;padding:1px 6px;margin-left:4px;vertical-align:middle;}
+  .m-name span.age{color:var(--muted);font-weight:400;font-size:12px;}
   .m-lvl{font-size:11px;color:var(--muted);margin-top:2px;}
   .m-badge{font-size:10px;color:#ffe6a6;margin-top:2px;}
   .m-pts{flex:0 0 auto;text-align:center;background:var(--dirt);border:3px solid var(--dirt-d);padding:4px 10px;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
@@ -77,14 +92,18 @@
   .bar{height:12px;background:var(--empty-d);border:2px solid var(--panel-line);margin-bottom:12px;overflow:hidden;}
   .bar>i{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--done) 0 8px,var(--done-d) 8px 10px);}
   .tasks{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .task{display:flex;align-items:center;gap:8px;padding:11px 10px;cursor:pointer;border:3px solid var(--empty-d);background:var(--empty);box-shadow:2px 2px 0 rgba(0,0,0,.28);font-size:13px;line-height:1.15;user-select:none;color:#fff;}
+  .task{display:flex;align-items:center;gap:8px;padding:11px 10px;cursor:pointer;border:3px solid var(--empty-d);background:var(--empty);box-shadow:2px 2px 0 rgba(0,0,0,.28);font-size:13px;line-height:1.15;user-select:none;color:#fff;position:relative;}
+  .task.locked{opacity:.55;cursor:not-allowed;}
   .task .tico{font-size:17px;}
   .task .ttl{flex:1;min-width:0;}
   .task .tstate{width:20px;text-align:center;font-size:16px;}
   .task.review{background:var(--review);border-color:var(--review-d);color:#2a2000;}
   .task.done{background:var(--done);border-color:var(--done-d);color:#0d2a12;}
-  .remind{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:13px;color:var(--muted);}
-  .remind input{background:var(--empty-d);border:3px solid var(--panel-line);color:#fff;padding:7px 8px;font-size:14px;}
+  .task .del{position:absolute;top:-8px;right:-8px;width:20px;height:20px;background:#5b3d25;border:2px solid #3c2717;color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .addtask{display:flex;gap:7px;margin-top:10px;}
+  .addtask input{flex:1;min-width:0;padding:9px 10px;border:3px solid var(--panel-line);background:var(--empty-d);color:#fff;font-size:14px;outline:none;}
+  .addtask input::placeholder{color:var(--muted);}
+  .addtask button{flex:0 0 auto;width:42px;background:var(--accent);border:3px solid var(--accent-d);color:#fff;font-size:20px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
 
   .lrow{display:flex;align-items:center;gap:12px;background:var(--panel2);border:3px solid var(--panel-line);box-shadow:3px 3px 0 rgba(0,0,0,.25);padding:11px 12px;margin-bottom:9px;}
   .lrow .chk{width:24px;height:24px;flex:0 0 auto;border:3px solid var(--muted);display:flex;align-items:center;justify-content:center;cursor:pointer;}
@@ -99,6 +118,11 @@
   .add-row input{flex:1;min-width:0;padding:11px;border:3px solid var(--panel-line);background:var(--empty-d);color:#fff;font-size:15px;outline:none;}
   .add-row input::placeholder{color:var(--muted);}
   .addbtn{flex:0 0 auto;width:46px;background:var(--accent);border:3px solid var(--accent-d);color:#fff;font-size:22px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
+  .evform{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+  .evform label{font-size:12px;color:var(--muted);margin-bottom:-4px;}
+  .evform input{padding:12px;border:3px solid var(--panel-line);background:var(--empty-d);color:#fff;font-size:15px;outline:none;width:100%;}
+  .evform input::placeholder{color:var(--muted);}
+  .addwide{padding:13px;background:var(--accent);border:3px solid var(--accent-d);color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
 
   nav.tabs{position:fixed;bottom:0;left:0;right:0;display:flex;z-index:20;background:var(--dirt);border-top:4px solid var(--dirt-d);padding:6px 0 calc(6px + env(safe-area-inset-bottom));}
   nav.tabs button{flex:1;background:none;border:none;color:#e7d9c4;font-family:inherit;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
@@ -106,6 +130,8 @@
   nav.tabs button.active{color:#fff;}
   .fail{background:var(--panel);border:4px solid var(--panel-line);padding:24px;text-align:center;color:var(--muted);}
 
+  #toast{position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:#17102b;border:3px solid var(--panel-line);color:#fff;padding:10px 16px;font-size:13px;z-index:70;display:none;box-shadow:0 4px 10px rgba(0,0,0,.4);max-width:90%;text-align:center;}
+  #toast.on{display:block;}
   #confetti{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden;display:none;}
   #confetti.on{display:block;}
   .conf{position:absolute;width:10px;height:10px;top:-12px;animation:fall linear forwards;}
@@ -122,6 +148,7 @@
   <header class="top">
     <h1 class="pixel">🏆 Наши достижения</h1>
     <div class="month pixel" id="month">—</div>
+    <div class="whoami" id="whoami"></div>
   </header>
   <div id="content"></div>
 </div>
@@ -132,6 +159,7 @@
   <button id="tab-cal" onclick="switchTab('cal')"><span class="ic">📅</span>Даты</button>
 </nav>
 
+<div id="toast"></div>
 <div id="confetti"></div>
 <div id="hero"><img id="heroImg" alt=""><div class="cheer">Победа! 🎉</div></div>
 
@@ -164,25 +192,47 @@
   function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
   function monthPrefix(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
   function addDays(base,d){ const x=new Date(base); x.setDate(x.getDate()+d); x.setHours(0,0,0,0); return x; }
-  function isParent(m){ return m.role==='parent'||m.role==='parent_admin'; }
+  function isParent(m){ return m && (m.role==='parent'||m.role==='parent_admin'); }
+  function member(id){ return DATA.members.find(x=>x.id===id); }
+  function meMember(){ return STATE.me?member(STATE.me):null; }
+  function meIsParent(){ return isParent(meMember()); }
+  function allTasks(m){ return m.tasks.concat(STATE.customTasks[m.id]||[]); }
 
-  let STATE={days:{},shopping:null,events:null,mom:false,reminders:{}};
-  function loadState(){ try{const s=JSON.parse(localStorage.getItem('dostizh_v3'));if(s)STATE=Object.assign(STATE,s);}catch(e){} if(!STATE.reminders)STATE.reminders={}; momMode=!!STATE.mom; }
-  function saveState(){ STATE.mom=momMode; try{localStorage.setItem('dostizh_v3',JSON.stringify(STATE));}catch(e){} }
+  let STATE={days:{},shopping:null,events:null,mom:false,reminders:{},me:null,customTasks:{}};
+  function loadState(){ try{const s=JSON.parse(localStorage.getItem('dostizh_v4'));if(s)STATE=Object.assign(STATE,s);}catch(e){} if(!STATE.reminders)STATE.reminders={}; if(!STATE.customTasks)STATE.customTasks={}; momMode=!!STATE.mom; }
+  function saveState(){ STATE.mom=momMode; try{localStorage.setItem('dostizh_v4',JSON.stringify(STATE));}catch(e){} }
   function dayObj(){ const k=key(curDate); if(!STATE.days[k])STATE.days[k]={}; return STATE.days[k]; }
   function status(mid,tid){ const d=STATE.days[key(curDate)]; return (d&&d[mid]&&d[mid][tid])||'empty'; }
   function setStatus(mid,tid,val){ const d=dayObj(); if(!d[mid])d[mid]={}; d[mid][tid]=val; }
   function monthPoints(mid){ let n=0; const mp=monthPrefix(curDate); for(const k in STATE.days){ if(k.indexOf(mp)===0){ const md=STATE.days[k][mid]; if(md) for(const t in md) if(md[t]==='done') n++; } } return n; }
   function levelOf(pts){ return {level:Math.min(7,1+Math.floor(pts/5)), progress:(pts%5)/5}; }
-  function reviewCount(){ let n=0; const d=STATE.days[key(curDate)]||{}; DATA.members.forEach(m=>{ if(isParent(m))return; m.tasks.forEach(t=>{ if((d[m.id]&&d[m.id][t.id])==='review')n++; }); }); return n; }
+  function reviewCount(){ let n=0; const d=STATE.days[key(curDate)]||{}; DATA.members.forEach(m=>{ if(isParent(m))return; allTasks(m).forEach(t=>{ if((d[m.id]&&d[m.id][t.id])==='review')n++; }); }); return n; }
+
+  function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(window.__tt); window.__tt=setTimeout(()=>el.classList.remove('on'),1900); }
 
   function render(){
     document.getElementById('month').textContent=DATA.month||'';
+    renderWhoami();
     const c=document.getElementById('content');
+    if(!STATE.me){ c.innerHTML=renderPicker(); return; }
     c.innerHTML = tab==='home'?renderHome():(tab==='shop'?renderShop():renderCal());
   }
 
   function face(m){ return m.image?`<img src="${m.image}" alt="" onerror="this.replaceWith(document.createTextNode('${m.character||''}'))">`:(m.character||''); }
+
+  function renderWhoami(){
+    const w=document.getElementById('whoami');
+    if(!STATE.me){ w.innerHTML=''; return; }
+    const m=meMember();
+    w.innerHTML=`Ты: <span class="wa-face">${face(m)}</span> <b>${esc(m.name)}</b> · <a onclick="changeMe()">сменить</a>`;
+  }
+
+  function renderPicker(){
+    let cards=DATA.members.map(m=>`<div class="pick" onclick="pickMe('${m.id}')"><div class="pf">${face(m)}</div><b>${esc(m.name)}</b><small>${isParent(m)?'взрослый':((m.age||'')+' лет')}</small></div>`).join('');
+    return `<div class="card"><h2>Кто ты?</h2><div class="hint">Выбери себя. Отмечать сможешь только <b>свои</b> задания, а видеть — достижения всех (это же соревнование 🏆).</div><div class="picker">${cards}</div></div>`;
+  }
+  window.pickMe=function(id){ STATE.me=id; momMode=false; saveState(); haptic('medium'); render(); };
+  window.changeMe=function(){ STATE.me=null; momMode=false; saveState(); render(); };
 
   function renderHome(){
     const rc=reviewCount();
@@ -192,10 +242,14 @@
     h+=`<div class="daynav"><button onclick="shiftDay(-1)">‹</button>
       <div class="cur"><b>${isToday?'Сегодня':(isYest?'Вчера':curDate.getDate()+' '+MONTHS[curDate.getMonth()])}</b><small>${WD[curDate.getDay()]}, ${curDate.getDate()} ${MONTHS[curDate.getMonth()]}</small></div>
       <button onclick="shiftDay(1)" ${isToday?'disabled':''}>›</button></div>`;
-    h+=`<div class="mombar"><div class="txt">${ momMode
-      ? '👑 <b>Режим родителя включён</b> — жми жёлтое ⏳, чтобы подтвердить ✅.'
-      : (rc? `⏳ <b>${rc}</b> ${plural(rc,['задание','задания','заданий'])} ждут проверки — включи режим родителя.` : 'Дети отмечают задания — мама или папа подтверждают 👑. Взрослые отмечают сами.') }</div>
-      <button class="lockbtn ${momMode?'on':''}" onclick="toggleMom()">${momMode?'🔓':'🔒'}</button></div>`;
+    if(meIsParent()){
+      h+=`<div class="mombar"><div class="txt">${ momMode
+        ? '👑 <b>Режим проверки включён</b> — жми жёлтое ⏳ у детей, чтобы подтвердить ✅.'
+        : (rc? `⏳ <b>${rc}</b> ${plural(rc,['задание','задания','заданий'])} ждут проверки — включи режим проверки.` : 'Ты взрослый: отмечаешь свои задания сам, а детские — подтверждаешь 👑.') }</div>
+        <button class="lockbtn ${momMode?'on':''}" onclick="toggleMom()">${momMode?'🔓':'🔒'}</button></div>`;
+    } else {
+      h+=`<div class="mombar"><div class="txt">Отмечай <b>свои</b> задания — они уйдут «на проверку» ⏳. Мама или папа подтвердят ✅.</div></div>`;
+    }
     const ranked=DATA.members.map(m=>({m,pts:monthPoints(m.id)})).sort((a,b)=>b.pts-a.pts);
     const medals=['🥇','🥈','🥉'];
     h+=`<div class="card"><h2>🏅 Рейтинг месяца</h2><div class="prize">🎁 В конце месяца — приз тому, у кого больше всех галочек</div>`;
@@ -205,28 +259,39 @@
     return h;
   }
 
+  function canAdd(m){ return STATE.me===m.id || meIsParent(); }
+
   function renderMember(m){
     const pts=monthPoints(m.id); const lv=levelOf(pts); const pct=Math.round(lv.progress*100);
-    const t=m.tasks.map(tk=>{ const st=status(m.id,tk.id); const cls=st==='done'?'done':(st==='review'?'review':''); const ic=st==='done'?'✅':(st==='review'?'⏳':'▫️');
-      return `<div class="task ${cls}" onclick="tapTask('${m.id}','${tk.id}')"><span class="tico">${tk.icon||''}</span><span class="ttl">${esc(tk.title)}</span><span class="tstate">${ic}</span></div>`; }).join('');
-    const rem=STATE.reminders[m.id]||'';
-    return `<div class="member"><div class="m-head"><div class="m-face">${face(m)}</div><div class="m-info"><div class="m-name">${esc(m.name)} ${m.age?`<span>${m.age} лет</span>`:''}</div><div class="m-lvl">${LEVELS[lv.level-1]} · ур. ${lv.level} · ${pts} очк.</div>${isParent(m)?'<div class="m-badge">взрослый — отмечает сам</div>':''}</div><div class="m-pts"><b>${pts}</b><small>очков</small></div></div><div class="bar"><i style="width:${pct}%"></i></div><div class="tasks">${t}</div><div class="remind">🔔 Напоминание: <input type="time" value="${rem}" onchange="setRemind('${m.id}',this.value)"></div></div>`;
+    const mine=STATE.me===m.id;
+    const t=allTasks(m).map(tk=>{ const st=status(m.id,tk.id); const cls=st==='done'?'done':(st==='review'?'review':''); const ic=st==='done'?'✅':(st==='review'?'⏳':'▫️');
+      const canTap = (STATE.me===m.id) || (meIsParent() && momMode && !isParent(m));
+      const locked = canTap?'':'locked';
+      const isCustom = tk.id.indexOf('c')===0 && (STATE.customTasks[m.id]||[]).some(x=>x.id===tk.id);
+      const del = (isCustom && canAdd(m)) ? `<span class="del" onclick="event.stopPropagation();delTask('${m.id}','${tk.id}')">✕</span>` : '';
+      return `<div class="task ${cls} ${locked}" onclick="tapTask('${m.id}','${tk.id}')"><span class="tico">${tk.icon||'📌'}</span><span class="ttl">${esc(tk.title)}</span><span class="tstate">${ic}</span>${del}</div>`; }).join('');
+    const addRow = canAdd(m) ? `<div class="addtask"><input id="ta-${m.id}" placeholder="Добавить дело для ${esc(m.name)}" onkeydown="if(event.key==='Enter')addTask('${m.id}')"><button onclick="addTask('${m.id}')">+</button></div>` : '';
+    return `<div class="member ${mine?'mine':''}"><div class="m-head"><div class="m-face">${face(m)}</div><div class="m-info"><div class="m-name">${esc(m.name)} ${m.age?`<span class="age">${m.age} лет</span>`:''}${mine?'<span class="you">ты</span>':''}</div><div class="m-lvl">${LEVELS[lv.level-1]} · ур. ${lv.level} · ${pts} очк.</div>${isParent(m)?'<div class="m-badge">взрослый — отмечает сам</div>':''}</div><div class="m-pts"><b>${pts}</b><small>очков</small></div></div><div class="bar"><i style="width:${pct}%"></i></div><div class="tasks">${t}</div>${addRow}<div class="remind">🔔 Напоминание: <input type="time" value="${STATE.reminders[m.id]||''}" onchange="setRemind('${m.id}',this.value)"></div></div>`;
   }
 
   window.tapTask=function(mid,tid){
-    const m=DATA.members.find(x=>x.id===mid); if(!m)return;
-    const st=status(mid,tid);
-    if(isParent(m)){
-      if(st==='done'){ setStatus(mid,tid,'empty'); haptic('rigid'); }
-      else { setStatus(mid,tid,'done'); haptic('medium'); celebrate(); }
-    } else if(momMode){
-      if(st==='review'){ setStatus(mid,tid,'done'); haptic('medium'); celebrate(); }
-      else if(st==='done'){ setStatus(mid,tid,'empty'); haptic('rigid'); }
-      else { setStatus(mid,tid,'review'); haptic('light'); }
+    const target=member(mid); const me=meMember();
+    const own = STATE.me===mid;
+    if(own){
+      const st=status(mid,tid);
+      if(isParent(me)){ if(st==='done'){setStatus(mid,tid,'empty');haptic('rigid');} else {setStatus(mid,tid,'done');haptic('medium');celebrate();} }
+      else { if(st==='empty'){setStatus(mid,tid,'review');haptic('light');smallConfetti();} else if(st==='review'){setStatus(mid,tid,'empty');haptic('light');} }
     } else {
-      if(st==='empty'){ setStatus(mid,tid,'review'); haptic('light'); smallConfetti(); }
-      else if(st==='review'){ setStatus(mid,tid,'empty'); haptic('light'); }
-      else { haptic('light'); }
+      // someone else's card
+      if(meIsParent() && momMode && !isParent(target)){
+        const st=status(mid,tid);
+        if(st==='review'){ setStatus(mid,tid,'done'); haptic('medium'); celebrate(); }
+        else if(st==='done'){ setStatus(mid,tid,'empty'); haptic('rigid'); }
+        else { toast('Ребёнок сам отмечает — подтвердить можно жёлтое ⏳'); return; }
+      } else {
+        toast(meIsParent()? 'Включи 🔒 режим проверки, чтобы подтверждать детям' : 'Отмечать можно только свои задания 🙂');
+        haptic('light'); return;
+      }
     }
     saveState(); render();
   };
@@ -234,12 +299,20 @@
   window.toggleMom=function(){ momMode=!momMode; haptic('medium'); saveState(); render(); };
   window.shiftDay=function(d){ const nd=addDays(curDate,d); if(nd>today)return; curDate=nd; haptic('light'); render(); };
 
+  window.addTask=function(mid){
+    const el=document.getElementById('ta-'+mid); if(!el)return; const v=el.value.trim(); if(!v)return;
+    if(!STATE.customTasks[mid])STATE.customTasks[mid]=[];
+    STATE.customTasks[mid].push({id:'c'+Date.now(),title:v,icon:'📌'});
+    saveState(); if(el)el.blur(); render(); haptic('medium'); toast('Дело добавлено');
+  };
+  window.delTask=function(mid,tid){ STATE.customTasks[mid]=(STATE.customTasks[mid]||[]).filter(x=>x.id!==tid); const d=STATE.days[key(curDate)]; if(d&&d[mid])delete d[mid][tid]; saveState(); render(); haptic('rigid'); };
+
   function renderShop(){
     let rows=DATA.shopping.map(s=>`<div class="lrow ${s.bought?'bought':''}"><div class="chk" onclick="toggleBuy(${s.id})">${s.bought?'✓':''}</div><div class="lt">${esc(s.text)}</div><button class="addbtn" style="width:38px;background:#5b3d25;border-color:#3c2717" onclick="delBuy(${s.id})">✕</button></div>`).join('');
     if(!DATA.shopping.length) rows='<div class="fail">Список пуст. Добавь, что купить.</div>';
     return `<div class="card"><h2>🛒 Список покупок</h2><div class="add-row"><input id="shopin" placeholder="Что купить? Например: хлеб" onkeydown="if(event.key==='Enter')addBuy()"><button class="addbtn" onclick="addBuy()">+</button></div>${rows}</div>`;
   }
-  window.addBuy=function(){const el=document.getElementById('shopin');const v=el.value.trim();if(!v)return;DATA.shopping.push({id:Date.now(),text:v,bought:false});STATE.shopping=DATA.shopping;saveState();render();haptic('medium');setTimeout(()=>{const n=document.getElementById('shopin');if(n)n.focus();},0);};
+  window.addBuy=function(){const el=document.getElementById('shopin');const v=el.value.trim();if(!v)return;DATA.shopping.unshift({id:Date.now(),text:v,bought:false});STATE.shopping=DATA.shopping;saveState();if(el)el.blur();render();haptic('medium');toast('Добавлено в список');};
   window.toggleBuy=function(id){const s=DATA.shopping.find(x=>x.id===id);if(s){s.bought=!s.bought;STATE.shopping=DATA.shopping;saveState();render();haptic('light');}};
   window.delBuy=function(id){DATA.shopping=DATA.shopping.filter(x=>x.id!==id);STATE.shopping=DATA.shopping;saveState();render();haptic('rigid');};
 
@@ -248,9 +321,9 @@
     let rows=sorted.map(e=>{const dt=new Date(e.date+'T00:00:00');const diff=Math.round((dt-today)/86400000);let when=diff<0?'прошло':(diff===0?'сегодня':(diff===1?'завтра':'через '+diff+' '+plural(diff,['день','дня','дней'])));
       return `<div class="lrow"><div class="datebadge"><b>${dt.getDate()}</b><small>${MONTHS[dt.getMonth()]}</small></div><div class="lt">${esc(e.text)}<div class="when">${when} · ${dt.getFullYear()}</div></div><button class="addbtn" style="width:38px;background:#5b3d25;border-color:#3c2717" onclick="delEv(${e.id})">✕</button></div>`;}).join('');
     if(!DATA.events.length) rows='<div class="fail">Событий нет. Добавь важную дату.</div>';
-    return `<div class="card"><h2>📅 Важные даты</h2><div class="add-row"><input id="evtxt" placeholder="Событие. Например: день рождения"></div><div class="add-row"><input id="evdate" type="date"><button class="addbtn" onclick="addEv()">+</button></div>${rows}</div>`;
+    return `<div class="card"><h2>📅 Важные даты</h2><div class="evform"><label>Что за событие</label><input id="evtxt" placeholder="Например: День рождения бабушки"><label>Когда</label><input id="evdate" type="date"><button class="addwide" onclick="addEv()">➕ Добавить событие</button></div>${rows}</div>`;
   }
-  window.addEv=function(){const t=document.getElementById('evtxt'),d=document.getElementById('evdate');if(!t.value.trim()){alert('Впиши название события');return;}if(!d.value){alert('Выбери дату');return;}DATA.events.push({id:Date.now(),text:t.value.trim(),date:d.value});STATE.events=DATA.events;saveState();render();haptic('medium');};
+  window.addEv=function(){const t=document.getElementById('evtxt'),d=document.getElementById('evdate');if(!t.value.trim()){toast('Впиши название события');return;}if(!d.value){toast('Выбери дату');return;}DATA.events.push({id:Date.now(),text:t.value.trim(),date:d.value});STATE.events=DATA.events;saveState();if(t)t.blur();render();haptic('medium');toast('Событие добавлено');};
   window.delEv=function(id){DATA.events=DATA.events.filter(x=>x.id!==id);STATE.events=DATA.events;saveState();render();haptic('rigid');};
 
   window.switchTab=function(name){tab=name;haptic('light');['home','shop','cal'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('active',t===name));render();};
