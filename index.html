@@ -308,7 +308,7 @@
     if(own){
       const st=status(mid,tid);
       if(isParent(me)){ if(st==='done'){nv='empty';haptic('rigid');} else {nv='done';haptic('medium');cel=true;} }
-      else { if(st==='empty'){nv='review';haptic('light');smallConfetti();} else if(st==='review'){nv='empty';haptic('light');} else {return;} }
+      else { if(st==='empty'){nv='review';haptic('medium');cel=true;} else if(st==='review'){nv='empty';haptic('light');} else {return;} }
     } else {
       if(meIsParent()&&momMode&&!isParent(target)){
         const st=status(mid,tid);
@@ -404,7 +404,15 @@
       document.getElementById('content').innerHTML='<div class="fail">Не удалось подключиться к базе 😔<br><small>'+esc(String(e).slice(0,120))+'</small></div>';
     }
     // sync каждые 6с (когда открыто и на вкладке заданий, и не мешая вводу)
-    setInterval(async()=>{ if(document.hidden)return; if(tab!=='home')return; if(!ME)return; const ae=document.activeElement; if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.tagName==='SELECT'))return; try{ await loadMarksOnly(); render(); }catch(e){} },6000);
+    setInterval(async()=>{ if(document.hidden)return; if(tab!=='home')return; if(!ME)return; const ae=document.activeElement; if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.tagName==='SELECT'))return;
+      try{
+        const before={}; const mm=member(ME); if(mm) allTasks(mm).forEach(t=>{ before[t.id]=MARKS[key(curDate)+'|'+ME+'|'+t.id]||'empty'; });
+        await loadMarksOnly();
+        let confirmed=false; if(mm) allTasks(mm).forEach(t=>{ const now=MARKS[key(curDate)+'|'+ME+'|'+t.id]||'empty'; if(before[t.id]!=='done'&&now==='done')confirmed=true; });
+        render();
+        if(confirmed){ toast('Засчитали! 🎉'); celebrate(); }
+      }catch(e){}
+    },6000);
   }
   boot();
 </script>
