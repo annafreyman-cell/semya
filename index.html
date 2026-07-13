@@ -187,9 +187,9 @@
       {"id":"sport","title":"Зарядка","icon":"🤸"},{"id":"read","title":"Читать","icon":"📖"}]},
     {"id":"evgeniy","name":"Папа","age":null,"role":"parent_admin","character":"🦁","image":"lion.png","tasks":[
       {"id":"sport","title":"Спорт","icon":"🤸"},{"id":"read","title":"Читать","icon":"📖"}]},
-    {"id":"arina","name":"Арина","age":18,"role":"child","character":"🐰","image":"arina.png","tasks":[
+    {"id":"arina","name":"Арина","age":18,"active":false,"role":"child","character":"🐰","image":"arina.png","tasks":[
       {"id":"litter","title":"Помыть лоток","icon":"🐱"},{"id":"feed","title":"Покормить кота","icon":"🥣"},{"id":"order","title":"Заказать корм","icon":"📦"}]},
-    {"id":"dmitry","name":"Дмитрий","age":19,"role":"child","character":"🐺","image":"dmitry.png","tasks":[
+    {"id":"dmitry","name":"Дмитрий","age":19,"active":false,"role":"child","character":"🐺","image":"dmitry.png","tasks":[
       {"id":"litter","title":"Помыть лоток","icon":"🐱"},{"id":"feed","title":"Покормить кота","icon":"🥣"},{"id":"order","title":"Заказать корм","icon":"📦"}]}]};
 
   const LEVELS=['Новичок','Ученик','Растёт','Умелец','Мастер','Герой','Легенда'];
@@ -209,13 +209,14 @@
   function addDays(base,d){ const x=new Date(base); x.setDate(x.getDate()+d); x.setHours(0,0,0,0); return x; }
   function isParent(m){ return m && (m.role==='parent'||m.role==='parent_admin'); }
   function member(id){ return DATA.members.find(x=>x.id===id); }
+  function activeMembers(){ return DATA.members.filter(m=>m.active!==false); }
   function meMember(){ return ME?member(ME):null; }
   function meIsParent(){ return isParent(meMember()); }
   function allTasks(m){ return m.tasks.concat(CUSTOM[m.id]||[]); }
   function status(mid,tid){ return MARKS[key(curDate)+'|'+mid+'|'+tid]||'empty'; }
   function monthPoints(mid){ let n=0; const mp=monthPrefix(curDate)+'-'; for(const k in MARKS){ const p=k.split('|'); if(p[1]===mid && p[0].indexOf(mp)===0 && MARKS[k]==='done') n++; } return n; }
   function levelOf(pts){ return {level:Math.min(7,1+Math.floor(pts/5)), progress:(pts%5)/5}; }
-  function reviewCount(){ let n=0; const kd=key(curDate); DATA.members.forEach(m=>{ if(isParent(m))return; allTasks(m).forEach(t=>{ if(MARKS[kd+'|'+m.id+'|'+t.id]==='review')n++; }); }); return n; }
+  function reviewCount(){ let n=0; const kd=key(curDate); activeMembers().forEach(m=>{ if(isParent(m))return; allTasks(m).forEach(t=>{ if(MARKS[kd+'|'+m.id+'|'+t.id]==='review')n++; }); }); return n; }
   function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(window.__tt); window.__tt=setTimeout(()=>el.classList.remove('on'),1900); }
 
   // ---------- DB ops ----------
@@ -261,7 +262,7 @@
     w.innerHTML=`Ты: <span class="wa-face">${face(m)}</span> <b>${esc(m.name)}</b>`+(canSwitch?` · <a onclick="changeMe()">сменить</a>`:'');
   }
   function renderPicker(){
-    let cards=DATA.members.map(m=>`<div class="pick" onclick="pickMe('${m.id}')"><div class="pf">${face(m)}</div><b>${esc(m.name)}</b><small>${isParent(m)?'взрослый':((m.age||'')+' лет')}</small></div>`).join('');
+    let cards=activeMembers().map(m=>`<div class="pick" onclick="pickMe('${m.id}')"><div class="pf">${face(m)}</div><b>${esc(m.name)}</b><small>${isParent(m)?'взрослый':((m.age||'')+' лет')}</small></div>`).join('');
     const note=TGID?'Это запомнится за твоим Telegram — потом отмечать сможешь только свои задания.':'Выбери себя (демо-режим на этом устройстве).';
     return `<div class="card"><h2>Кто ты?</h2><div class="hint">${note} Видеть достижения будешь у всех — это соревнование 🏆.</div><div class="picker">${cards}</div></div>`;
   }
@@ -284,12 +285,12 @@
     } else {
       h+=`<div class="mombar"><div class="txt">Отмечай <b>свои</b> задания — они уйдут «на проверку» ⏳. Мама или папа подтвердят ✅.</div></div>`;
     }
-    const ranked=DATA.members.map(m=>({m,pts:monthPoints(m.id)})).sort((a,b)=>b.pts-a.pts);
+    const ranked=activeMembers().map(m=>({m,pts:monthPoints(m.id)})).sort((a,b)=>b.pts-a.pts);
     const medals=['🥇','🥈','🥉'];
     h+=`<div class="card"><h2>🏅 Рейтинг месяца</h2><div class="prize">🎁 В конце месяца — приз тому, у кого больше всех галочек</div>`;
     ranked.forEach((r,i)=>{ const lv=levelOf(r.pts); h+=`<div class="rank-row"><div class="rank-medal">${medals[i]||(i+1)}</div><div class="rank-face">${face(r.m)}</div><div class="rank-name">${esc(r.m.name)}<small>${LEVELS[lv.level-1]}</small></div><div class="rank-pts">${r.pts} <span class="tick">✓</span></div></div>`; });
     h+=`</div>`;
-    DATA.members.forEach(m=>{ h+=renderMember(m); });
+    activeMembers().forEach(m=>{ h+=renderMember(m); });
     return h;
   }
   function canAdd(m){ return ME===m.id || meIsParent(); }
@@ -353,7 +354,7 @@
       const whoTag=(e.who&&e.who!=='all')?` · 👤 ${esc(whoLabel(e.who))}`:' · 👥 всем';
       return `<div class="lrow"><div class="datebadge"><b>${dt.getDate()}</b><small>${MONTHS[dt.getMonth()]}</small></div><div class="lt">${esc(e.text)}<div class="when">${when} · ${dt.getFullYear()}${whoTag}</div></div><button class="addbtn" style="width:38px;background:#5b3d25;border-color:#3c2717" onclick="delEv(${e.id})">✕</button></div>`;}).join('');
     if(!EVENTS.length) rows='<div class="fail">Событий нет. Добавь важную дату.</div>';
-    const opts='<option value="all">Всем</option>'+DATA.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+    const opts='<option value="all">Всем</option>'+activeMembers().map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
     return `<div class="card"><h2>📅 Важные даты</h2><div class="evform"><label>Что за событие</label><input id="evtxt" placeholder="Например: Йога в библиотеке"><label>Когда</label><input id="evdate" type="date"><label>Кому</label><select id="evwho">${opts}</select><button class="addwide" onclick="addEv()">➕ Добавить событие</button></div>${rows}</div>`;
   }
   window.addEv=async function(){const t=document.getElementById('evtxt'),d=document.getElementById('evdate'),ws=document.getElementById('evwho');if(!t.value.trim()){toast('Впиши название события');return;}if(!d.value){toast('Выбери дату');return;}const who=ws?ws.value:'all';const id=Date.now();EVENTS.push({id,text:t.value.trim(),date:d.value,who});if(t)t.blur();render();haptic('medium');toast('Событие добавлено');
@@ -371,7 +372,7 @@
     return `<div style="margin-bottom:6px"><div style="font-size:13px;color:var(--muted);margin:2px 2px 6px">${label}</div>${rows}${add}</div>`; }
   function renderGoals(){
     let h='<div class="card"><h2>🎯 Цели семьи</h2><div class="hint">У каждого свои «Хочу» и «Штрафы». Отмечай галочкой, когда сбылось или закрыл. Добавляют сами и родители.</div></div>';
-    DATA.members.forEach(m=>{
+    activeMembers().forEach(m=>{
       h+=`<div class="member ${ME===m.id?'mine':''}"><div class="m-head"><div class="m-face">${face(m)}</div><div class="m-info"><div class="m-name">${esc(m.name)}${ME===m.id?'<span class="you">ты</span>':''}</div></div></div>`;
       h+=wishSection(m,'want','🎁 Хочу');
       h+=wishSection(m,'fine','⚠️ Штрафы / долги');
