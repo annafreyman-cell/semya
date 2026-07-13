@@ -159,6 +159,7 @@
   <button id="tab-home" class="active" onclick="switchTab('home')"><span class="ic">🏆</span>Задания</button>
   <button id="tab-shop" onclick="switchTab('shop')"><span class="ic">🛒</span>Покупки</button>
   <button id="tab-cal" onclick="switchTab('cal')"><span class="ic">📅</span>Даты</button>
+  <button id="tab-goals" onclick="switchTab('goals')"><span class="ic">🎯</span>Цели</button>
 </nav>
 
 <div id="toast"></div>
@@ -194,7 +195,7 @@
   let today=new Date(); today.setHours(0,0,0,0);
   let curDate=new Date(today);
   let ME=null; // member id
-  let MARKS={}, CUSTOM={}, SHOP=[], EVENTS=[];
+  let MARKS={}, CUSTOM={}, SHOP=[], EVENTS=[], WISHES=[];
   let REMIND={}; try{REMIND=JSON.parse(localStorage.getItem('remind'))||{};}catch(e){}
 
   function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -217,16 +218,18 @@
   async function loadAll(){
     const mp=monthPrefix(curDate);
     const start=mp+'-01', end=mp+'-31';
-    const [marks,cust,shop,evs]=await Promise.all([
+    const [marks,cust,shop,evs,wsh]=await Promise.all([
       db('marks?select=*&day=gte.'+start+'&day=lte.'+end),
       db('custom_tasks?select=*'),
       db('shopping?select=*&order=id.desc'),
-      db('events?select=*&order=on_date.asc')
+      db('events?select=*&order=on_date.asc'),
+      db('wishes?select=*&order=id.asc')
     ]);
     MARKS={}; (marks||[]).forEach(m=>MARKS[m.day+'|'+m.member_id+'|'+m.task_id]=m.status);
     CUSTOM={}; (cust||[]).forEach(c=>{(CUSTOM[c.member_id]=CUSTOM[c.member_id]||[]).push({id:c.id,title:c.title,icon:c.icon||'📌'});});
     SHOP=(shop||[]).map(s=>({id:s.id,text:s.txt,bought:s.bought}));
     EVENTS=(evs||[]).map(e=>({id:e.id,text:e.txt,date:e.on_date,who:e.who||'all'}));
+    WISHES=(wsh||[]).map(w=>({id:w.id,member:w.member_id,kind:w.kind||'want',title:w.title,note:w.note||'',done:!!w.done}));
   }
   async function loadMarksOnly(){
     const mp=monthPrefix(curDate);
@@ -244,7 +247,7 @@
     const c=document.getElementById('content');
     if(!loaded){ return; }
     if(!ME){ c.innerHTML=renderPicker(); return; }
-    c.innerHTML = tab==='home'?renderHome():(tab==='shop'?renderShop():renderCal());
+    c.innerHTML = tab==='home'?renderHome():(tab==='shop'?renderShop():(tab==='cal'?renderCal():renderGoals()));
   }
   function face(m){ return m.image?`<img src="${m.image}" alt="" onerror="this.replaceWith(document.createTextNode('${m.character||''}'))">`:(m.character||''); }
   function renderWhoami(){
@@ -354,7 +357,34 @@
   window.delEv=async function(id){EVENTS=EVENTS.filter(x=>x.id!==id);render();haptic('rigid');
     try{await db('events?id=eq.'+id,{method:'DELETE',headers:{Prefer:'return=minimal'}});}catch(e){}};
 
-  window.switchTab=async function(name){tab=name;haptic('light');['home','shop','cal'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('active',t===name));render(); try{await loadAll();render();}catch(e){}};
+  // ---- Цели: хотелки и штрафы ----
+  function wishRow(m,w){ const can=canAdd(m);
+    return `<div class="lrow ${w.done?'bought':''}"><div class="chk" onclick="toggleWish(${w.id})">${w.done?'✓':''}</div><div class="lt">${esc(w.title)}${w.note?`<div class="when">${esc(w.note)}</div>`:''}</div>${can?`<button class="addbtn" style="width:34px;background:#5b3d25;border-color:#3c2717" onclick="delWish(${w.id})">✕</button>`:''}</div>`; }
+  function wishSection(m,kind,label){ const items=WISHES.filter(w=>w.member===m.id&&w.kind===kind);
+    let rows=items.map(w=>wishRow(m,w)).join('');
+    if(!items.length) rows=`<div style="color:var(--muted);font-size:12px;padding:2px 2px 8px">пока пусто</div>`;
+    const add=canAdd(m)?`<button class="addwide" style="width:100%;margin-bottom:4px" onclick="addWish('${m.id}','${kind}')">➕ ${kind==='want'?'Добавить хотелку':'Добавить штраф'}</button>`:'';
+    return `<div style="margin-bottom:6px"><div style="font-size:13px;color:var(--muted);margin:2px 2px 6px">${label}</div>${rows}${add}</div>`; }
+  function renderGoals(){
+    let h='<div class="card"><h2>🎯 Цели семьи</h2><div class="hint">У каждого свои «Хочу» и «Штрафы». Отмечай галочкой, когда сбылось или закрыл. Добавляют сами и родители.</div></div>';
+    DATA.members.forEach(m=>{
+      h+=`<div class="member ${ME===m.id?'mine':''}"><div class="m-head"><div class="m-face">${face(m)}</div><div class="m-info"><div class="m-name">${esc(m.name)}${ME===m.id?'<span class="you">ты</span>':''}</div></div></div>`;
+      h+=wishSection(m,'want','🎁 Хочу');
+      h+=wishSection(m,'fine','⚠️ Штрафы / долги');
+      h+='</div>';
+    });
+    return h;
+  }
+  window.addWish=async function(mid,kind){ const nm=member(mid); const t=(prompt((kind==='want'?'Хотелка для ':'Штраф для ')+(nm?nm.name:'')+':')||'').trim(); if(!t)return;
+    const note=(prompt('Заметка (например «копит к 1 сентября») — или оставь пустым:')||'').trim();
+    const id=Date.now(); WISHES.push({id,member:mid,kind,title:t,note,done:false}); render(); haptic('medium'); toast('Добавлено');
+    try{ await db('wishes',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id,member_id:mid,kind,title:t,note,done:false})}); }catch(e){ toast('Не сохранилось'); } };
+  window.toggleWish=async function(id){ const w=WISHES.find(x=>x.id===id); if(!w)return; if(!canAdd(member(w.member))){ toast('Отмечать может сам человек или родитель 🙂'); return; } w.done=!w.done; render(); haptic('light');
+    try{ await db('wishes?id=eq.'+id,{method:'PATCH',headers:{Prefer:'return=minimal'},body:JSON.stringify({done:w.done})}); }catch(e){} };
+  window.delWish=async function(id){ WISHES=WISHES.filter(x=>x.id!==id); render(); haptic('rigid');
+    try{ await db('wishes?id=eq.'+id,{method:'DELETE',headers:{Prefer:'return=minimal'}}); }catch(e){} };
+
+  window.switchTab=async function(name){tab=name;haptic('light');['home','shop','cal','goals'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('active',t===name));render(); try{await loadAll();render();}catch(e){}};
 
   function smallConfetti(){ burst(16); }
   function celebrate(){ burst(46); const hero=document.getElementById('hero'); hero.classList.remove('on'); void hero.offsetWidth; hero.classList.add('on'); setTimeout(()=>hero.classList.remove('on'),4500); }
