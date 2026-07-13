@@ -122,7 +122,7 @@
   .addbtn{flex:0 0 auto;width:46px;background:var(--accent);border:3px solid var(--accent-d);color:#fff;font-size:22px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
   .evform{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
   .evform label{font-size:12px;color:var(--muted);margin-bottom:-4px;}
-  .evform input{padding:12px;border:3px solid var(--panel-line);background:var(--empty-d);color:#fff;font-size:15px;outline:none;width:100%;}
+  .evform input,.evform select{padding:12px;border:3px solid var(--panel-line);background:var(--empty-d);color:#fff;font-size:15px;outline:none;width:100%;}
   .evform input::placeholder{color:var(--muted);}
   .addwide{padding:13px;background:var(--accent);border:3px solid var(--accent-d);color:#fff;font-size:15px;font-weight:700;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,.3);}
 
@@ -226,7 +226,7 @@
     MARKS={}; (marks||[]).forEach(m=>MARKS[m.day+'|'+m.member_id+'|'+m.task_id]=m.status);
     CUSTOM={}; (cust||[]).forEach(c=>{(CUSTOM[c.member_id]=CUSTOM[c.member_id]||[]).push({id:c.id,title:c.title,icon:c.icon||'📌'});});
     SHOP=(shop||[]).map(s=>({id:s.id,text:s.txt,bought:s.bought}));
-    EVENTS=(evs||[]).map(e=>({id:e.id,text:e.txt,date:e.on_date}));
+    EVENTS=(evs||[]).map(e=>({id:e.id,text:e.txt,date:e.on_date,who:e.who||'all'}));
   }
   async function loadMarksOnly(){
     const mp=monthPrefix(curDate);
@@ -295,7 +295,7 @@
       const isCustom=(CUSTOM[m.id]||[]).some(x=>x.id===tk.id);
       const del=(isCustom&&canAdd(m))?`<span class="del" onclick="event.stopPropagation();delTask('${m.id}','${tk.id}')">✕</span>`:'';
       return `<div class="task ${cls} ${locked}" onclick="tapTask('${m.id}','${tk.id}')"><span class="tico">${tk.icon||'📌'}</span><span class="ttl">${esc(tk.title)}</span><span class="tstate">${ic}</span>${del}</div>`; }).join('');
-    const addRow=canAdd(m)?`<div class="addtask"><input id="ta-${m.id}" placeholder="Добавить дело для ${esc(m.name)}" onkeydown="if(event.key==='Enter')addTask('${m.id}')"><button onclick="addTask('${m.id}')">+</button></div>`:'';
+    const addRow=canAdd(m)?`<div class="addtask"><button class="addwide" style="flex:1;width:100%" onclick="addTask('${m.id}')">➕ Добавить дело</button></div>`:'';
     return `<div class="member ${mine?'mine':''}"><div class="m-head"><div class="m-face">${face(m)}</div><div class="m-info"><div class="m-name">${esc(m.name)} ${m.age?`<span class="age">${m.age} лет</span>`:''}${mine?'<span class="you">ты</span>':''}</div><div class="m-lvl">${LEVELS[lv.level-1]} · ур. ${lv.level} · ${pts} очк.</div>${isParent(m)?'<div class="m-badge">взрослый — отмечает сам</div>':''}</div><div class="m-pts"><b>${pts}</b><small>очков</small></div></div><div class="bar"><i style="width:${pct}%"></i></div><div class="tasks">${t}</div>${addRow}<div class="remind">🔔 Напоминание: <input type="time" value="${REMIND[m.id]||''}" onchange="setRemind('${m.id}',this.value)"></div></div>`;
   }
 
@@ -321,8 +321,8 @@
   window.toggleMom=function(){ momMode=!momMode; haptic('medium'); render(); };
   window.shiftDay=async function(d){ const nd=addDays(curDate,d); if(nd>today)return; curDate=nd; haptic('light'); render(); try{await loadMarksOnly();render();}catch(e){} };
 
-  window.addTask=async function(mid){ const el=document.getElementById('ta-'+mid); if(!el)return; const v=el.value.trim(); if(!v)return;
-    const id='c'+Date.now(); (CUSTOM[mid]=CUSTOM[mid]||[]).push({id,title:v,icon:'📌'}); if(el)el.blur(); render(); haptic('medium'); toast('Дело добавлено');
+  window.addTask=async function(mid){ const nm=member(mid); const v=(prompt('Новое дело для '+(nm?nm.name:'')+':')||'').trim(); if(!v)return;
+    const id='c'+Date.now(); (CUSTOM[mid]=CUSTOM[mid]||[]).push({id,title:v,icon:'📌'}); render(); haptic('medium'); toast('Дело добавлено');
     try{ await db('custom_tasks',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id,member_id:mid,title:v,icon:'📌'})}); }catch(e){ toast('Не сохранилось в базу'); } };
   window.delTask=async function(mid,tid){ CUSTOM[mid]=(CUSTOM[mid]||[]).filter(x=>x.id!==tid); render(); haptic('rigid');
     try{ await db('custom_tasks?id=eq.'+encodeURIComponent(tid),{method:'DELETE',headers:{Prefer:'return=minimal'}}); }catch(e){} };
@@ -339,15 +339,18 @@
   window.delBuy=async function(id){SHOP=SHOP.filter(x=>x.id!==id);render();haptic('rigid');
     try{await db('shopping?id=eq.'+id,{method:'DELETE',headers:{Prefer:'return=minimal'}});}catch(e){}};
 
+  function whoLabel(w){ if(!w||w==='all')return 'всем'; const m=member(w); return m?m.name:'—'; }
   function renderCal(){
     const sorted=[...EVENTS].sort((a,b)=>new Date(a.date)-new Date(b.date));
     let rows=sorted.map(e=>{const dt=new Date(e.date+'T00:00:00');const diff=Math.round((dt-today)/86400000);let when=diff<0?'прошло':(diff===0?'сегодня':(diff===1?'завтра':'через '+diff+' '+plural(diff,['день','дня','дней'])));
-      return `<div class="lrow"><div class="datebadge"><b>${dt.getDate()}</b><small>${MONTHS[dt.getMonth()]}</small></div><div class="lt">${esc(e.text)}<div class="when">${when} · ${dt.getFullYear()}</div></div><button class="addbtn" style="width:38px;background:#5b3d25;border-color:#3c2717" onclick="delEv(${e.id})">✕</button></div>`;}).join('');
+      const whoTag=(e.who&&e.who!=='all')?` · 👤 ${esc(whoLabel(e.who))}`:' · 👥 всем';
+      return `<div class="lrow"><div class="datebadge"><b>${dt.getDate()}</b><small>${MONTHS[dt.getMonth()]}</small></div><div class="lt">${esc(e.text)}<div class="when">${when} · ${dt.getFullYear()}${whoTag}</div></div><button class="addbtn" style="width:38px;background:#5b3d25;border-color:#3c2717" onclick="delEv(${e.id})">✕</button></div>`;}).join('');
     if(!EVENTS.length) rows='<div class="fail">Событий нет. Добавь важную дату.</div>';
-    return `<div class="card"><h2>📅 Важные даты</h2><div class="evform"><label>Что за событие</label><input id="evtxt" placeholder="Например: День рождения бабушки"><label>Когда</label><input id="evdate" type="date"><button class="addwide" onclick="addEv()">➕ Добавить событие</button></div>${rows}</div>`;
+    const opts='<option value="all">Всем</option>'+DATA.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+    return `<div class="card"><h2>📅 Важные даты</h2><div class="evform"><label>Что за событие</label><input id="evtxt" placeholder="Например: Йога в библиотеке"><label>Когда</label><input id="evdate" type="date"><label>Кому</label><select id="evwho">${opts}</select><button class="addwide" onclick="addEv()">➕ Добавить событие</button></div>${rows}</div>`;
   }
-  window.addEv=async function(){const t=document.getElementById('evtxt'),d=document.getElementById('evdate');if(!t.value.trim()){toast('Впиши название события');return;}if(!d.value){toast('Выбери дату');return;}const id=Date.now();EVENTS.push({id,text:t.value.trim(),date:d.value});if(t)t.blur();render();haptic('medium');toast('Событие добавлено');
-    try{await db('events',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id,txt:t.value.trim(),on_date:d.value})});}catch(e){toast('Не сохранилось');}};
+  window.addEv=async function(){const t=document.getElementById('evtxt'),d=document.getElementById('evdate'),ws=document.getElementById('evwho');if(!t.value.trim()){toast('Впиши название события');return;}if(!d.value){toast('Выбери дату');return;}const who=ws?ws.value:'all';const id=Date.now();EVENTS.push({id,text:t.value.trim(),date:d.value,who});if(t)t.blur();render();haptic('medium');toast('Событие добавлено');
+    try{await db('events',{method:'POST',headers:{Prefer:'return=minimal'},body:JSON.stringify({id,txt:t.value.trim(),on_date:d.value,who})});}catch(e){toast('Не сохранилось');}};
   window.delEv=async function(id){EVENTS=EVENTS.filter(x=>x.id!==id);render();haptic('rigid');
     try{await db('events?id=eq.'+id,{method:'DELETE',headers:{Prefer:'return=minimal'}});}catch(e){}};
 
@@ -370,8 +373,8 @@
     }catch(e){
       document.getElementById('content').innerHTML='<div class="fail">Не удалось подключиться к базе 😔<br><small>'+esc(String(e).slice(0,120))+'</small></div>';
     }
-    // sync каждые 6с (когда открыто и на вкладке заданий)
-    setInterval(async()=>{ if(document.hidden)return; if(tab!=='home')return; if(!ME)return; try{ await loadMarksOnly(); render(); }catch(e){} },6000);
+    // sync каждые 6с (когда открыто и на вкладке заданий, и не мешая вводу)
+    setInterval(async()=>{ if(document.hidden)return; if(tab!=='home')return; if(!ME)return; const ae=document.activeElement; if(ae&&(ae.tagName==='INPUT'||ae.tagName==='TEXTAREA'||ae.tagName==='SELECT'))return; try{ await loadMarksOnly(); render(); }catch(e){} },6000);
   }
   boot();
 </script>
