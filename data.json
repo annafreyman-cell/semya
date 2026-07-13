@@ -73,6 +73,32 @@
         { "id": "sport", "title": "Спорт",  "icon": "🤸", "status": "empty" },
         { "id": "read",  "title": "Читать", "icon": "📖", "status": "done" }
       ]
+    },
+    {
+      "id": "arina",
+      "name": "Арина",
+      "age": 18,
+      "role": "child",
+      "character": "🐰",
+      "image": "arina.png",
+      "tasks": [
+        { "id": "litter", "title": "Помыть лоток", "icon": "🐱" },
+        { "id": "feed",   "title": "Покормить кота", "icon": "🥣" },
+        { "id": "order",  "title": "Заказать корм", "icon": "📦" }
+      ]
+    },
+    {
+      "id": "dmitry",
+      "name": "Дмитрий",
+      "age": 19,
+      "role": "child",
+      "character": "🐺",
+      "image": "dmitry.png",
+      "tasks": [
+        { "id": "litter", "title": "Помыть лоток", "icon": "🐱" },
+        { "id": "feed",   "title": "Покормить кота", "icon": "🥣" },
+        { "id": "order",  "title": "Заказать корм", "icon": "📦" }
+      ]
     }
   ],
   "shopping": [
